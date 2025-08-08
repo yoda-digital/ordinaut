@@ -121,7 +121,7 @@ celerybeat.pid
 
 # Environments
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
@@ -263,3 +263,5 @@ heartbeat.json
 # Docker compose override files
 docker-compose.override.yml
 docker-compose.local.yml
+
+.mcp.json

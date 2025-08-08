@@ -5,7 +5,8 @@
     <img alt="Ordinaut Logo" src="assets/ordinaut_logo.png" width="200" height="auto">
   </picture>
   
-  # Ordinaut
+---
+
   ### Ordinaut
   
   <p>
