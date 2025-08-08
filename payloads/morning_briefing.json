@@ -1,0 +1,63 @@
+{
+  "title": "Weekday Morning Briefing",
+  "description": "Agenda, weather, top emails, plan",
+  "created_by": "00000000-0000-0000-0000-000000000001",
+  "schedule_kind": "rrule",
+  "schedule_expr": "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=8;BYMINUTE=30;BYSECOND=0",
+  "timezone": "Europe/Chisinau",
+  "payload": {
+    "params": {
+      "date_start_iso": "2025-08-08T00:00:00+03:00",
+      "date_end_iso":   "2025-08-08T23:59:59+03:00"
+    },
+    "pipeline": [
+      {
+        "id": "calendar",
+        "uses": "google-calendar-mcp.list_events",
+        "with": {
+          "start": "${params.date_start_iso}",
+          "end": "${params.date_end_iso}"
+        },
+        "save_as": "events"
+      },
+      {
+        "id": "weather",
+        "uses": "weather-mcp.forecast",
+        "with": {
+          "city": "Chisinau"
+        },
+        "save_as": "weather"
+      },
+      {
+        "id": "emails",
+        "uses": "imap-mcp.top_unread",
+        "with": {
+          "count": 5
+        },
+        "save_as": "inbox"
+      },
+      {
+        "id": "brief",
+        "uses": "llm.plan",
+        "with": {
+          "instruction": "Create morning briefing with today's schedule, weather, and important emails",
+          "calendar": "${steps.events}",
+          "weather": "${steps.weather}",
+          "emails": "${steps.inbox}"
+        },
+        "save_as": "summary"
+      },
+      {
+        "id": "notify",
+        "uses": "telegram-mcp.send_message",
+        "with": {
+          "chat_id": 12345,
+          "text": "${steps.summary.text}"
+        }
+      }
+    ]
+  },
+  "priority": 5,
+  "max_retries": 3,
+  "backoff_strategy": "exponential"
+}

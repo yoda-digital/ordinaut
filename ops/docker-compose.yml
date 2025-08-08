@@ -1,0 +1,117 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16.4
+    environment:
+      POSTGRES_USER: orchestrator
+      POSTGRES_PASSWORD: orchestrator_pw
+      POSTGRES_DB: orchestrator
+      TZ: Europe/Chisinau
+      PGTZ: Europe/Chisinau
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orchestrator -d orchestrator"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2.5
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile.api
+    environment:
+      DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
+      REDIS_URL: redis://redis:6379/0
+      TZ: Europe/Chisinau
+      PYTHONPATH: /app
+      UVICORN_HOST: 0.0.0.0
+      UVICORN_PORT: 8080
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile.scheduler
+    environment:
+      DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
+      REDIS_URL: redis://redis:6379/0
+      TZ: Europe/Chisinau
+      PYTHONPATH: /app
+      LOG_LEVEL: info
+      SCHEDULER_MISFIRE_GRACE_TIME: 30
+      SCHEDULER_MAX_WORKERS: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile.worker
+    environment:
+      DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
+      REDIS_URL: redis://redis:6379/0
+      TZ: Europe/Chisinau
+      PYTHONPATH: /app
+      LOG_LEVEL: info
+      WORKER_LEASE_SECONDS: 60
+      WORKER_POLL_INTERVAL: 0.5
+      WORKER_MAX_RETRIES: 3
+      WORKER_BACKOFF_MAX_DELAY: 60
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  default:
+    name: ordinaut-network
+    driver: bridge

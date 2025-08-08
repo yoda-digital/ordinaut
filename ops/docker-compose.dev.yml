@@ -1,0 +1,77 @@
+version: "3.9"
+
+# Development overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: orchestrator
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: orchestrator_dev
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d/
+
+  redis:
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata-dev:/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile.api
+      target: development
+    environment:
+      DATABASE_URL: postgresql://orchestrator:dev_password@postgres:5432/orchestrator_dev
+      REDIS_URL: redis://redis:6379/0
+      TZ: Europe/Chisinau
+      PYTHONPATH: /app
+      UVICORN_RELOAD: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - ../api:/app/api:ro
+      - ../engine:/app/engine:ro
+    ports:
+      - "8080:8080"
+
+  scheduler:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile.scheduler
+    environment:
+      DATABASE_URL: postgresql://orchestrator:dev_password@postgres:5432/orchestrator_dev
+      REDIS_URL: redis://redis:6379/0
+      TZ: Europe/Chisinau
+      PYTHONPATH: /app
+      LOG_LEVEL: debug
+    volumes:
+      - ../scheduler:/app/scheduler:ro
+      - ../engine:/app/engine:ro
+
+  worker:
+    build:
+      context: ..
+      dockerfile: ops/Dockerfile.worker
+    environment:
+      DATABASE_URL: postgresql://orchestrator:dev_password@postgres:5432/orchestrator_dev
+      REDIS_URL: redis://redis:6379/0
+      TZ: Europe/Chisinau
+      PYTHONPATH: /app
+      LOG_LEVEL: debug
+      WORKER_POLL_INTERVAL: 1.0
+    volumes:
+      - ../workers:/app/workers:ro
+      - ../engine:/app/engine:ro
+    deploy:
+      replicas: 1
+
+volumes:
+  pgdata-dev:
+    driver: local
+  redisdata-dev:
+    driver: local

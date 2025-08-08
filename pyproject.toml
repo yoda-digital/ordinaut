@@ -1,0 +1,163 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ordinaut"
+version = "1.0.0"
+description = "A production-ready Personal Agent Orchestrator that provides AI agents with a shared backbone for time, state, and discipline"
+readme = "README.md"
+authors = [
+    {name = "Yoda Digital", email = "contact@yoda-digital.com"}
+]
+maintainers = [
+    {name = "Yoda Digital", email = "contact@yoda-digital.com"}
+]
+license = {text = "MIT"}
+keywords = ["ai", "agents", "orchestration", "scheduling", "automation", "mcp"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Office/Business :: Scheduling",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.111.0",
+    "uvicorn==0.30.1",
+    "pydantic==2.8.2",
+    "SQLAlchemy==2.0.31",
+    "psycopg[binary]==3.1.19",
+    "redis==5.0.7",
+    "apscheduler==3.11.0",
+    "python-dateutil==2.9.0.post0",
+    "jmespath==1.0.1",
+    "jsonschema==4.23.0",
+    "httpx==0.27.2",
+    "structlog>=25.4.0",
+    "prometheus-client>=0.22.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "testcontainers>=4.0.0",
+    "factory-boy>=3.3.0",
+    "faker>=20.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "isort>=5.12.0",
+]
+test = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "testcontainers>=4.0.0",
+    "factory-boy>=3.3.0",
+    "faker>=20.0.0",
+    "coverage>=7.0.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocs-mermaid2-plugin>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yoda-digital/ordinaut"
+Repository = "https://github.com/yoda-digital/ordinaut.git"
+Documentation = "https://github.com/yoda-digital/ordinaut#readme"
+Issues = "https://github.com/yoda-digital/ordinaut/issues"
+Changelog = "https://github.com/yoda-digital/ordinaut/releases"
+
+[project.scripts]
+ordinaut-api = "api.main:main"
+ordinaut-scheduler = "scheduler.tick:main"
+ordinaut-worker = "workers.runner:main"
+
+[tool.setuptools.packages.find]
+include = ["api*", "engine*", "scheduler*", "workers*", "observability*"]
+exclude = ["tests*", "ops*", "scripts*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.venv
+  | build
+  | dist
+  | ops
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["api", "engine", "scheduler", "workers", "observability"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["api", "engine", "scheduler", "workers", "observability"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "ops/*",
+    "scripts/*",
+    ".venv/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

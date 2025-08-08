@@ -1,0 +1,125 @@
+version: "3.9"
+
+# Production overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+services:
+  postgres:
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    volumes:
+      - pgdata-prod:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  redis:
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redisdata-prod:/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  api:
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      TZ: ${TZ:-Europe/Chisinau}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      UVICORN_WORKERS: 4
+      UVICORN_WORKER_CLASS: uvicorn.workers.UvicornWorker
+      PYTHONPATH: /app
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+      replicas: 2
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  scheduler:
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      TZ: ${TZ:-Europe/Chisinau}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SCHEDULER_MISFIRE_GRACE_TIME: ${SCHEDULER_MISFIRE_GRACE_TIME:-30}
+      SCHEDULER_MAX_WORKERS: ${SCHEDULER_MAX_WORKERS:-10}
+      PYTHONPATH: /app
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+      replicas: 1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  worker:
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      TZ: ${TZ:-Europe/Chisinau}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      WORKER_LEASE_SECONDS: ${WORKER_LEASE_SECONDS:-60}
+      WORKER_POLL_INTERVAL: ${WORKER_POLL_INTERVAL:-0.5}
+      WORKER_MAX_RETRIES: ${WORKER_MAX_RETRIES:-3}
+      WORKER_BACKOFF_MAX_DELAY: ${WORKER_BACKOFF_MAX_DELAY:-60}
+      PYTHONPATH: /app
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+      replicas: 4
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+volumes:
+  pgdata-prod:
+    driver: local
+  redisdata-prod:
+    driver: local

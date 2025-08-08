@@ -1,0 +1,236 @@
+# Alertmanager configuration for Personal Agent Orchestrator
+# Routes alerts to appropriate notification channels based on severity
+
+global:
+  # Default SMTP configuration (can be overridden)
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'orchestrator-alerts@example.com'
+  smtp_auth_username: 'orchestrator-alerts@example.com'
+  smtp_auth_password: 'your-email-password'
+  
+  # Slack configuration
+  slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+
+# Notification templates
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Alert routing configuration
+route:
+  group_by: ['alertname', 'severity', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default-receiver'
+  
+  # Route critical alerts immediately
+  routes:
+    # Critical system alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 30m
+      continue: false  # Stop processing other routes for critical alerts
+      
+    # Database alerts - high priority
+    - match:
+        service: database
+      receiver: 'database-team'
+      group_wait: 30s
+      group_interval: 2m
+      repeat_interval: 1h
+      
+    # Security alerts - immediate attention
+    - match:
+        service: security
+      receiver: 'security-team'
+      group_wait: 15s
+      group_interval: 1m
+      repeat_interval: 2h
+      
+    # Performance alerts - development team
+    - match_re:
+        service: 'api|pipeline|workers|scheduler'
+      receiver: 'development-team'
+      group_wait: 2m
+      group_interval: 5m
+      repeat_interval: 2h
+      
+    # Infrastructure alerts - ops team
+    - match_re:
+        service: 'system|redis'
+      receiver: 'operations-team'
+      group_wait: 1m
+      group_interval: 3m
+      repeat_interval: 2h
+
+# Alert notification receivers
+receivers:
+  # Default receiver for unmatched alerts
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'orchestrator-team@example.com'
+        subject: '[Orchestrator] {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Severity:** {{ .Labels.severity }}
+          **Service:** {{ .Labels.service }}
+          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          {{ if .Annotations.runbook_url }}**Runbook:** {{ .Annotations.runbook_url }}{{ end }}
+          
+          **Labels:** {{ range .Labels.SortedPairs }}{{ .Name }}={{ .Value }} {{ end }}
+          {{ end }}
+
+  # Critical alerts - multiple channels
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'orchestrator-oncall@example.com'
+        subject: '[CRITICAL] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          🚨 **CRITICAL ORCHESTRATOR ALERT** 🚨
+          
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Service:** {{ .Labels.service }}
+          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          **Runbook:** {{ .Annotations.runbook_url }}
+          
+          **Action Required:** Immediate investigation and remediation needed.
+          {{ end }}
+          
+    slack_configs:
+      - channel: '#orchestrator-critical'
+        username: 'Orchestrator Alerts'
+        icon_emoji: ':rotating_light:'
+        title: 'Critical Orchestrator Alert'
+        text: |
+          {{ range .Alerts }}
+          **{{ .Annotations.summary }}**
+          {{ .Annotations.description }}
+          
+          *Service:* {{ .Labels.service }} | *Started:* {{ .StartsAt.Format "15:04:05" }}
+          {{ if .Annotations.runbook_url }}<{{ .Annotations.runbook_url }}|:book: Runbook>{{ end }}
+          {{ end }}
+        color: 'danger'
+        
+    # PagerDuty integration for critical alerts
+    pagerduty_configs:
+      - routing_key: 'your-pagerduty-integration-key'
+        description: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        details:
+          service: '{{ range .Alerts }}{{ .Labels.service }}{{ end }}'
+          severity: '{{ range .Alerts }}{{ .Labels.severity }}{{ end }}'
+          runbook: '{{ range .Alerts }}{{ .Annotations.runbook_url }}{{ end }}'
+
+  # Database team alerts
+  - name: 'database-team'
+    email_configs:
+      - to: 'database-team@example.com'
+        subject: '[Database] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          **Database Alert from Personal Agent Orchestrator**
+          
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          {{ if .Annotations.runbook_url }}**Runbook:** {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+          
+    slack_configs:
+      - channel: '#database-alerts'
+        username: 'Orchestrator DB Monitor'
+        icon_emoji: ':database:'
+        color: 'warning'
+
+  # Security team alerts
+  - name: 'security-team'
+    email_configs:
+      - to: 'security-team@example.com'
+        subject: '[SECURITY] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        body: |
+          🛡️ **Security Alert from Personal Agent Orchestrator** 🛡️
+          
+          {{ range .Alerts }}
+          **Alert:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          {{ if .Annotations.runbook_url }}**Runbook:** {{ .Annotations.runbook_url }}{{ end }}
+          
+          **Please investigate immediately for potential security implications.**
+          {{ end }}
+          
+    slack_configs:
+      - channel: '#security-alerts'
+        username: 'Orchestrator Security'
+        icon_emoji: ':shield:'
+        color: 'danger'
+
+  # Development team alerts
+  - name: 'development-team'
+    email_configs:
+      - to: 'dev-team@example.com'
+        subject: '[Development] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        
+    slack_configs:
+      - channel: '#orchestrator-dev'
+        username: 'Orchestrator Monitor'
+        icon_emoji: ':gear:'
+        title: 'Orchestrator Performance Alert'
+        text: |
+          {{ range .Alerts }}
+          **{{ .Annotations.summary }}**
+          {{ .Annotations.description }}
+          
+          *Service:* {{ .Labels.service }} | *Severity:* {{ .Labels.severity }}
+          {{ if .Annotations.runbook_url }}<{{ .Annotations.runbook_url }}|:book: Runbook>{{ end }}
+          {{ end }}
+        color: 'warning'
+
+  # Operations team alerts
+  - name: 'operations-team'
+    email_configs:
+      - to: 'ops-team@example.com'
+        subject: '[Operations] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        
+    slack_configs:
+      - channel: '#orchestrator-ops'
+        username: 'Orchestrator Ops'
+        icon_emoji: ':wrench:'
+        color: 'warning'
+
+# Inhibition rules to prevent spam
+inhibit_rules:
+  # Inhibit lower severity alerts when critical alerts are firing
+  - source_match:
+      severity: 'critical'
+    target_match_re:
+      severity: 'warning|info'
+    equal: ['service', 'alertname']
+
+  # Inhibit specific alert combinations
+  - source_match:
+      alertname: 'OrchestratorAPIDown'
+    target_match_re:
+      alertname: 'HighAPILatency|HighErrorRate'
+    equal: ['service']
+    
+  - source_match:
+      alertname: 'OrchestratorDatabaseDown'
+    target_match_re:
+      alertname: 'HighDatabaseConnections|DatabaseSlowQueries'
+    equal: ['service']
+
+  - source_match:
+      alertname: 'NoActiveWorkers'
+    target_match_re:
+      alertname: 'LowTaskThroughput|HighQueueDepth'
+    equal: ['service']
+
+# Time-based silencing (for maintenance windows)
+# Can be configured dynamically via Alertmanager API or UI

@@ -1,0 +1,300 @@
+# Alert rules for Personal Agent Orchestrator
+# Monitors system health and performance for >99.9% uptime requirement
+
+groups:
+  - name: orchestrator_critical_alerts
+    interval: 30s
+    rules:
+      # System Health Alerts
+      - alert: OrchestratorAPIDown
+        expr: up{job="orchestrator-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: orchestrator-api
+        annotations:
+          summary: "Orchestrator API is down"
+          description: "The Orchestrator API has been down for more than 1 minute. This affects all agent operations."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/api-down"
+
+      - alert: OrchestratorDatabaseDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Orchestrator database is down"
+          description: "The PostgreSQL database is unreachable. All operations will fail."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/database-down"
+
+      - alert: OrchestratorRedisDown
+        expr: up{job="redis"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: "Orchestrator Redis is down"
+          description: "Redis is unreachable. Event streaming and caching will be impacted."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/redis-down"
+
+      # Worker Health Alerts
+      - alert: NoActiveWorkers
+        expr: orchestrator_active_workers == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: workers
+        annotations:
+          summary: "No active workers detected"
+          description: "All workers appear to be down. Tasks will not be processed."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/no-workers"
+
+      - alert: WorkerCountLow
+        expr: orchestrator_active_workers < 2
+        for: 5m
+        labels:
+          severity: warning
+          service: workers
+        annotations:
+          summary: "Worker count is low ({{ $value }})"
+          description: "Only {{ $value }} workers active. Consider scaling up for reliability."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/low-worker-count"
+
+      # Queue and Scheduling Alerts
+      - alert: HighQueueDepth
+        expr: orchestrator_due_work_queue_depth > 100
+        for: 2m
+        labels:
+          severity: warning
+          service: scheduler
+        annotations:
+          summary: "High queue depth ({{ $value }} tasks)"
+          description: "Task queue has {{ $value }} pending items. Processing may be behind."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/high-queue-depth"
+
+      - alert: CriticalQueueDepth
+        expr: orchestrator_due_work_queue_depth > 500
+        for: 1m
+        labels:
+          severity: critical
+          service: scheduler
+        annotations:
+          summary: "Critical queue depth ({{ $value }} tasks)"
+          description: "Task queue is severely backed up with {{ $value }} pending items."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/critical-queue-depth"
+
+      - alert: HighSchedulerLag
+        expr: orchestrator_scheduler_lag_seconds > 60
+        for: 2m
+        labels:
+          severity: warning
+          service: scheduler
+        annotations:
+          summary: "High scheduler lag ({{ $value }}s)"
+          description: "Scheduler is {{ $value }}s behind schedule. Tasks may be delayed."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/scheduler-lag"
+
+      - alert: CriticalSchedulerLag
+        expr: orchestrator_scheduler_lag_seconds > 300
+        for: 1m
+        labels:
+          severity: critical
+          service: scheduler
+        annotations:
+          summary: "Critical scheduler lag ({{ $value }}s)"
+          description: "Scheduler is severely lagged at {{ $value }}s. Urgent intervention needed."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/critical-scheduler-lag"
+
+  - name: orchestrator_performance_alerts
+    interval: 60s
+    rules:
+      # Performance and Throughput Alerts
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(orchestrator_http_request_duration_seconds_bucket[5m])) > 2.0
+        for: 3m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High API latency ({{ $value }}s)"
+          description: "95th percentile API response time is {{ $value }}s, above 2s threshold."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/high-api-latency"
+
+      - alert: HighTaskFailureRate
+        expr: rate(orchestrator_step_failure_total[5m]) / rate(orchestrator_step_success_total[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: warning
+          service: pipeline
+        annotations:
+          summary: "High task failure rate ({{ $value | humanizePercentage }})"
+          description: "Task failure rate is {{ $value | humanizePercentage }}, above 5% threshold."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/high-failure-rate"
+
+      - alert: LowTaskThroughput
+        expr: rate(orchestrator_runs_total[5m]) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: workers
+        annotations:
+          summary: "Low task throughput ({{ $value }} tasks/sec)"
+          description: "Task execution rate is {{ $value }} tasks/sec, below expected threshold."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/low-throughput"
+
+      # External Dependencies
+      - alert: ExternalToolHighLatency
+        expr: histogram_quantile(0.90, rate(orchestrator_external_tool_duration_seconds_bucket[5m])) > 10.0
+        for: 5m
+        labels:
+          severity: warning
+          service: external-tools
+        annotations:
+          summary: "High external tool latency ({{ $value }}s)"
+          description: "90th percentile external tool response time is {{ $value }}s."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/external-tool-latency"
+
+      - alert: ExternalToolFailureRate
+        expr: rate(orchestrator_external_tool_calls_total{status_code!~"2.."}[5m]) / rate(orchestrator_external_tool_calls_total[5m]) > 0.10
+        for: 3m
+        labels:
+          severity: warning
+          service: external-tools
+        annotations:
+          summary: "High external tool failure rate ({{ $value | humanizePercentage }})"
+          description: "External tool failure rate is {{ $value | humanizePercentage }}, above 10% threshold."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/external-tool-failures"
+
+  - name: orchestrator_resource_alerts
+    interval: 60s
+    rules:
+      # Database Resource Alerts
+      - alert: HighDatabaseConnections
+        expr: postgres_stat_activity_count > 80
+        for: 2m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High database connection count ({{ $value }})"
+          description: "Database has {{ $value }} active connections, approaching connection limit."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/high-db-connections"
+
+      - alert: DatabaseSlowQueries
+        expr: postgres_stat_activity_max_tx_duration > 30
+        for: 1m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Slow database queries detected ({{ $value }}s)"
+          description: "Longest running query is {{ $value }}s, may indicate blocking."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/slow-queries"
+
+      # Memory and CPU Alerts
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 3m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage ({{ $value | humanizePercentage }})"
+          description: "Memory usage is {{ $value | humanizePercentage }}, above 85% threshold."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/high-memory"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage ({{ $value }}%)"
+          description: "CPU usage is {{ $value }}%, above 80% threshold."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/high-cpu"
+
+      # Disk Space Alerts
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.15
+        for: 1m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Low disk space ({{ $value | humanizePercentage }} remaining)"
+          description: "Disk space is {{ $value | humanizePercentage }} remaining on {{ $labels.device }}."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/low-disk-space"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.05
+        for: 30s
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Critical disk space ({{ $value | humanizePercentage }} remaining)"
+          description: "Critical disk space {{ $value | humanizePercentage }} remaining on {{ $labels.device }}."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/critical-disk-space"
+
+  - name: orchestrator_business_logic_alerts
+    interval: 60s
+    rules:
+      # Business Logic and Operational Alerts
+      - alert: TaskStuckInProcessing
+        expr: time() - orchestrator_task_duration_seconds{success="false"} > 1800
+        for: 1m
+        labels:
+          severity: warning
+          service: workers
+        annotations:
+          summary: "Task stuck in processing for {{ $value }}s"
+          description: "Task {{ $labels.task_id }} has been processing for {{ $value }}s without completion."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/stuck-task"
+
+      - alert: NoRecentTaskActivity
+        expr: rate(orchestrator_runs_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+          service: scheduler
+        annotations:
+          summary: "No recent task activity"
+          description: "No tasks have been executed in the last 10 minutes. Scheduler may be idle."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/no-task-activity"
+
+      - alert: HighRetryRate
+        expr: rate(orchestrator_task_duration_seconds{success="false"}[5m]) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          service: workers
+        annotations:
+          summary: "High task retry rate ({{ $value }} retries/sec)"
+          description: "Task retry rate is {{ $value }} retries/sec, indicating systemic issues."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/high-retry-rate"
+
+      # Security and Audit Alerts
+      - alert: UnauthorizedAPIAccess
+        expr: rate(orchestrator_http_requests_total{status_code="401"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "High rate of unauthorized API requests"
+          description: "{{ $value }} unauthorized requests per second detected."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/unauthorized-access"
+
+      - alert: HighErrorRate
+        expr: rate(orchestrator_http_requests_total{status_code=~"5.."}[5m]) / rate(orchestrator_http_requests_total[5m]) > 0.02
+        for: 2m
+        labels:
+          severity: warning
+          service: api
+        annotations:
+          summary: "High API error rate ({{ $value | humanizePercentage }})"
+          description: "API error rate is {{ $value | humanizePercentage }}, above 2% threshold."
+          runbook_url: "https://docs.orchestrator.example.com/runbooks/high-error-rate"

@@ -1,0 +1,115 @@
+# Prometheus configuration for Personal Agent Orchestrator
+# Scrapes metrics from all system components
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'personal-orchestrator'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# Load alert rules
+rule_files:
+  - "alert_rules.yml"
+
+# Scrape configuration
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Personal Agent Orchestrator API
+  - job_name: 'orchestrator-api'
+    scrape_interval: 10s
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['api:8080']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'orchestrator-api'
+
+  # Worker processes
+  - job_name: 'orchestrator-workers'
+    scrape_interval: 10s
+    metrics_path: /metrics
+    static_configs:
+      - targets: 
+        - 'worker-1:8090'
+        - 'worker-2:8090'
+        - 'worker-3:8090'
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: 'worker-(\d+):.*'
+        target_label: worker_id
+        replacement: 'worker-${1}'
+
+  # Scheduler process
+  - job_name: 'orchestrator-scheduler'
+    scrape_interval: 15s
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['scheduler:8091']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'orchestrator-scheduler'
+
+  # PostgreSQL exporter
+  - job_name: 'postgres'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'orchestrator-postgres'
+
+  # Redis exporter
+  - job_name: 'redis'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'orchestrator-redis'
+
+  # Node exporter for system metrics
+  - job_name: 'node'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['node-exporter:9100']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'orchestrator-host'
+
+  # Service discovery for dynamic worker scaling
+  - job_name: 'orchestrator-workers-discovery'
+    scrape_interval: 10s
+    metrics_path: /metrics
+    consul_sd_configs:
+      - server: 'consul:8500'
+        services: ['orchestrator-worker']
+    relabel_configs:
+      - source_labels: [__meta_consul_service_id]
+        target_label: worker_id
+      - source_labels: [__meta_consul_node]
+        target_label: node
+
+# Storage configuration
+storage:
+  tsdb:
+    retention.time: 30d
+    retention.size: 10GB
+    path: /prometheus/data
+    wal-compression: true

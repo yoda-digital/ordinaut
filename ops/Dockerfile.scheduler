@@ -1,0 +1,41 @@
+FROM python:3.12-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Create app user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first for better Docker layer caching
+COPY requirements.txt /app/requirements.txt
+
+# Install Python dependencies needed for scheduler
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    SQLAlchemy==2.0.31 \
+    psycopg[binary]==3.1.19 \
+    apscheduler==3.11.0 \
+    python-dateutil==2.9.0.post0 \
+    redis==5.0.7 \
+    pydantic==2.8.2
+
+# Copy application code needed for scheduler
+COPY scheduler/ /app/scheduler/
+COPY engine/rruler.py /app/engine/rruler.py
+COPY engine/registry.py /app/engine/registry.py
+COPY engine/__init__.py /app/engine/__init__.py
+
+# Change ownership to app user
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Run the APScheduler service
+CMD ["python", "scheduler/tick.py"]
