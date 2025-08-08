@@ -5,10 +5,6 @@
     <img alt="Ordinaut Logo" src="assets/ordinaut_logo.png" width="200" height="auto">
   </picture>
   
----
-
-  ### Ordinaut
-  
   <p>
     <strong>Lightweight, event-driven orchestrator for AI agents and pipelines with RRULE scheduling, persistent state, retries, and full observability.</strong>
   </p>
