@@ -91,7 +91,7 @@ CREATE INDEX idx_due_work_task_id ON due_work (task_id);
 
 -- Index for worker lease queries - supports WHERE clause in worker SELECT
 CREATE INDEX idx_due_work_ready ON due_work (run_at, locked_until) 
-WHERE locked_until IS NULL OR locked_until < now();
+WHERE locked_until IS NULL;
 
 -- Task table performance indexes
 CREATE INDEX idx_task_created_by ON task (created_by);

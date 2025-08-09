@@ -16,15 +16,9 @@ WORKDIR /app
 # Copy requirements first for better Docker layer caching
 COPY requirements.txt /app/requirements.txt
 
-# Install Python dependencies needed for scheduler
+# Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir \
-    SQLAlchemy==2.0.31 \
-    psycopg[binary]==3.1.19 \
-    apscheduler==3.11.0 \
-    python-dateutil==2.9.0.post0 \
-    redis==5.0.7 \
-    pydantic==2.8.2
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application code needed for scheduler
 COPY scheduler/ /app/scheduler/
