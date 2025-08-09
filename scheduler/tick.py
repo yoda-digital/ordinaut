@@ -507,10 +507,10 @@ def main():
     """Main entry point for scheduler service."""
     try:
         # Get database URL from environment
-        database_url = os.environ.get(
-            "DATABASE_URL", 
-            "postgresql://orchestrator:orchestrator_pw@localhost:5432/orchestrator"
-        )
+        database_url = os.environ.get("DATABASE_URL")
+        if not database_url:
+            logger.error("DATABASE_URL environment variable is required")
+            sys.exit(1)
         
         logger.info(f"Using database URL: {database_url}")
         

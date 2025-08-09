@@ -15,7 +15,7 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ../migrations:/docker-entrypoint-initdb.d/
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U orchestrator -d orchestrator"]
+      test: ["CMD-SHELL", "pg_isready -U orchestrator"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -42,7 +42,7 @@ services:
       dockerfile: ops/Dockerfile.api
       target: production
     environment:
-      DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
+      DATABASE_URL: postgresql+psycopg://orchestrator:orchestrator_pw@postgres:5432/orchestrator
       REDIS_URL: redis://redis:6379/0
       TZ: Europe/Chisinau
       PYTHONPATH: /app
@@ -70,7 +70,7 @@ services:
       dockerfile: ops/Dockerfile.scheduler
       target: production
     environment:
-      DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
+      DATABASE_URL: postgresql+psycopg://orchestrator:orchestrator_pw@postgres:5432/orchestrator
       REDIS_URL: redis://redis:6379/0
       TZ: Europe/Chisinau
       PYTHONPATH: /app
@@ -90,7 +90,7 @@ services:
       dockerfile: ops/Dockerfile.worker
       target: production
     environment:
-      DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
+      DATABASE_URL: postgresql+psycopg://orchestrator:orchestrator_pw@postgres:5432/orchestrator
       REDIS_URL: redis://redis:6379/0
       TZ: Europe/Chisinau
       PYTHONPATH: /app

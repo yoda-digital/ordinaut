@@ -9,14 +9,17 @@ import os
 import redis
 from typing import Generator, Optional
 from fastapi import Depends, HTTPException, Header, status
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 
 from .models import Agent
 
 # Database setup
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://orchestrator:orchestrator_pw@localhost:5432/orchestrator")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is required")
+
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 # Create database engine with appropriate settings for database type
@@ -194,7 +197,7 @@ async def check_database_health() -> bool:
             # For PostgreSQL, use SQLAlchemy session
             db = SessionLocal()
             try:
-                db.execute("SELECT 1")
+                db.execute(text("SELECT 1"))
                 return True
             finally:
                 db.close()

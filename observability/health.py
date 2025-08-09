@@ -290,15 +290,15 @@ class SystemHealthMonitor:
                     SELECT 
                         COUNT(DISTINCT worker_id) as total_workers,
                         COUNT(DISTINCT worker_id) FILTER (
-                            WHERE last_heartbeat > now() - interval '30 seconds'
+                            WHERE last_seen > now() - interval '30 seconds'
                         ) as active_workers,
                         COUNT(DISTINCT worker_id) FILTER (
-                            WHERE last_heartbeat > now() - interval '2 minutes'
+                            WHERE last_seen > now() - interval '2 minutes'
                         ) as recent_workers,
-                        MAX(last_heartbeat) as latest_heartbeat,
-                        EXTRACT(EPOCH FROM (now() - MIN(last_heartbeat))) as oldest_heartbeat_age
+                        MAX(last_seen) as latest_heartbeat,
+                        EXTRACT(EPOCH FROM (now() - MIN(last_seen))) as oldest_heartbeat_age
                     FROM worker_heartbeat
-                    WHERE last_heartbeat > now() - interval '10 minutes'
+                    WHERE last_seen > now() - interval '10 minutes'
                 """)).fetchone()
                 
                 # Check active work leases

@@ -307,11 +307,11 @@ class WorkerRunner:
                 
                 # Record heartbeat
                 cx.execute(text("""
-                    INSERT INTO worker_heartbeat (worker_id, last_heartbeat, processed_count, pid, hostname)
+                    INSERT INTO worker_heartbeat (worker_id, last_seen, processed_count, pid, hostname)
                     VALUES (:worker_id, now(), :count, :pid, :hostname)
                     ON CONFLICT (worker_id) 
                     DO UPDATE SET 
-                        last_heartbeat = now(),
+                        last_seen = now(),
                         processed_count = EXCLUDED.processed_count,
                         pid = EXCLUDED.pid,
                         hostname = EXCLUDED.hostname
@@ -330,7 +330,7 @@ class WorkerRunner:
                 orchestrator_metrics.update_queue_depth(queue_depth)
                 orchestrator_metrics.update_active_workers(
                     worker_id=self.config.worker_id,
-                    state=self.state.value,
+                    state=self.state,
                     count=1
                 )
                 
