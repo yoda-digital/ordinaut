@@ -85,6 +85,18 @@ pip install pytest pytest-asyncio sqlalchemy psycopg2-binary fastapi uvicorn aps
 
 ---
 
+## Git Commit Standards
+
+**CRITICAL: NEVER include Claude or AI authorship attribution in git commit messages.**
+
+- NO "Generated with Claude Code" footers
+- NO "Co-Authored-By: Claude" attributions  
+- NO AI-related signatures or credits
+- Keep commits clean and professional
+- Focus on technical changes, not authorship
+
+---
+
 ## Development Philosophy & Standards
 
 ### Concurrency-First Design
