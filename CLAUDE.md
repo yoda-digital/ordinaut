@@ -66,6 +66,25 @@ ordinaut/
 
 ---
 
+## Development Environment Setup
+
+### Python Virtual Environment (Required)
+```bash
+# Virtual environment is located at .venv/ (with dot prefix)
+source .venv/bin/activate
+
+# If creating new environment:
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install pytest pytest-asyncio sqlalchemy psycopg2-binary fastapi uvicorn apscheduler redis python-dateutil jsonschema jmespath pytz
+```
+
+**IMPORTANT: The project uses `.venv/` (with dot prefix) not `venv/`. Always activate with `source .venv/bin/activate` for development and testing.**
+
+---
+
 ## Development Philosophy & Standards
 
 ### Concurrency-First Design

@@ -1,4 +1,5 @@
-FROM python:3.12-slim
+# Base stage with common dependencies
+FROM python:3.12-slim AS base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -27,10 +28,29 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY api/ /app/api/
 COPY engine/ /app/engine/
+COPY observability/ /app/observability/
 COPY migrations/ /app/migrations/
 
 # Change ownership to app user
 RUN chown -R appuser:appuser /app
+
+# Development stage
+FROM base AS development
+
+# Install development dependencies
+RUN pip install --no-cache-dir pytest pytest-asyncio
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
+EXPOSE 8080
+
+# Run with hot reloading for development
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload", "--log-level", "debug"]
+
+# Production stage
+FROM base AS production
 
 # Switch to non-root user
 USER appuser

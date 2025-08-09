@@ -1,4 +1,5 @@
-FROM python:3.12-slim
+# Base stage with common dependencies
+FROM python:3.12-slim AS base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
@@ -27,12 +28,26 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy application code needed for scheduler
 COPY scheduler/ /app/scheduler/
-COPY engine/rruler.py /app/engine/rruler.py
-COPY engine/registry.py /app/engine/registry.py
-COPY engine/__init__.py /app/engine/__init__.py
+COPY engine/ /app/engine/
+COPY observability/ /app/observability/
 
 # Change ownership to app user
 RUN chown -R appuser:appuser /app
+
+# Development stage
+FROM base AS development
+
+# Install development dependencies
+RUN pip install --no-cache-dir pytest pytest-asyncio
+
+# Switch to non-root user
+USER appuser
+
+# Run the APScheduler service with debug logging
+CMD ["python", "scheduler/tick.py", "--debug"]
+
+# Production stage
+FROM base AS production
 
 # Switch to non-root user
 USER appuser

@@ -40,6 +40,7 @@ services:
     build:
       context: ..
       dockerfile: ops/Dockerfile.api
+      target: production
     environment:
       DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
       REDIS_URL: redis://redis:6379/0
@@ -67,6 +68,7 @@ services:
     build:
       context: ..
       dockerfile: ops/Dockerfile.scheduler
+      target: production
     environment:
       DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
       REDIS_URL: redis://redis:6379/0
@@ -86,6 +88,7 @@ services:
     build:
       context: ..
       dockerfile: ops/Dockerfile.worker
+      target: production
     environment:
       DATABASE_URL: postgresql://orchestrator:orchestrator_pw@postgres:5432/orchestrator
       REDIS_URL: redis://redis:6379/0
