@@ -10,6 +10,8 @@ This module provides the core execution engine, including:
 from .rruler import next_occurrence, validate_rrule_syntax
 from .registry import load_active_tasks, load_catalog, get_tool
 
+__version__ = "1.0.0"
+
 __all__ = [
     'next_occurrence',
     'validate_rrule_syntax', 
