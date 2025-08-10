@@ -26,12 +26,19 @@ This creates a persistent, coordinated "personal AI operating system" where agen
 - **JSON Schema** - Strict validation for all tool inputs/outputs
 - **Model Context Protocol (MCP)** - Standard interface for agent integration
 
+### Release Management
+- **python-semantic-release==10.3.0** - Automated versioning and release management
+- **Conventional Commits** - Standardized commit format for automated releases
+- **GitHub Actions** - CI/CD pipeline for automated testing and releases
+- **Keep a Changelog** - Professional changelog format with automated generation
+
 ### Why These Choices
 - APScheduler + SQLAlchemy + PostgreSQL is explicitly recommended by APScheduler maintainers
 - `FOR UPDATE SKIP LOCKED` is the canonical PostgreSQL pattern for safe job distribution
 - Redis Streams designed for ordered, durable event logs with consumer groups
 - MCP is the emerging standard for AI agent tool integration
 - **psycopg3** provides superior performance and modern Python 3.12 async support
+- **Python Semantic Release** provides industry-standard automated release management
 
 ---
 
@@ -87,7 +94,7 @@ pip install -r requirements.txt
 
 ---
 
-## Git Commit Standards
+## Git Commit Standards & Semantic Release
 
 **CRITICAL: NEVER include Claude or AI authorship attribution in git commit messages.**
 
@@ -96,6 +103,44 @@ pip install -r requirements.txt
 - NO AI-related signatures or credits
 - Keep commits clean and professional
 - Focus on technical changes, not authorship
+
+### Conventional Commits for Automated Releases
+
+**The project uses Python Semantic Release for automated versioning and releases.** All commits must follow [Conventional Commits](https://conventionalcommits.org/) format:
+
+```
+type(scope): description
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Commit Types & Version Impact:**
+- `feat:` → **Minor release** (1.0.0 → 1.1.0) - New features
+- `fix:` → **Patch release** (1.0.0 → 1.0.1) - Bug fixes  
+- `perf:` → **Patch release** (1.0.0 → 1.0.1) - Performance improvements
+- `feat!:` → **Major release** (1.0.0 → 2.0.0) - Breaking changes
+- `docs:`, `chore:`, `ci:`, `refactor:`, `style:`, `test:` → **No release**
+
+**Examples:**
+```bash
+feat(api): add task snoozing functionality
+fix(scheduler): resolve DST transition handling  
+perf(worker): optimize SKIP LOCKED query performance
+feat!: remove support for legacy API endpoints
+
+BREAKING CHANGE: Legacy v1 endpoints removed. Migrate to v2 API.
+```
+
+**Scopes:** Use module names (`api`, `engine`, `scheduler`, `workers`, `docs`, `ci`)
+
+**Release Process:**
+1. Push conventional commits to `main` branch
+2. GitHub Actions automatically analyzes commits
+3. Semantic-release calculates next version
+4. Creates git tag, GitHub release, and updates changelog
+5. All module versions synchronized automatically
 
 ---
 
@@ -465,6 +510,18 @@ curl "http://localhost:8080/runs?limit=10&include_errors=true"
 **CURRENT READINESS: 100% - DEPLOYMENT APPROVED**
 
 **Development Timeline Completed: August 10, 2025**
+
+**🚀 Release Management: FULLY AUTOMATED**
+
+**Python Semantic Release v10.3.0** is now operational with:
+- ✅ **Automated versioning** via conventional commits
+- ✅ **GitHub Actions integration** for hands-free releases  
+- ✅ **Multi-module synchronization** across all Python packages
+- ✅ **Professional changelog generation** with Keep a Changelog format
+- ✅ **Git tagging and GitHub releases** automatically created
+- ✅ **Version 1.0.0 successfully released** with complete automation
+
+**Next release triggered by:** Any conventional commit pushed to `main` branch
 
 ```bash
 # Production Deployment Start
