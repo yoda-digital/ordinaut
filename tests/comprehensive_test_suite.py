@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive Test Suite for Personal Agent Orchestrator
+Comprehensive Test Suite for Ordinaut
 
 This test suite provides complete coverage of all critical system components
 without requiring external dependencies like Docker. It includes:

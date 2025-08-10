@@ -1,8 +1,8 @@
 """
-Personal Agent Orchestrator Scheduler Module
+Ordinaut Scheduler Module
 
 This module provides the APScheduler-based scheduling service for the
-Personal Agent Orchestrator system.
+Ordinaut system.
 """
 
 from .tick import SchedulerService

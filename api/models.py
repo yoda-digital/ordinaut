@@ -1,7 +1,7 @@
 """
 SQLAlchemy ORM models matching the database schema from plan.md section 2.
 
-These models provide the complete data layer for the Personal Agent Orchestrator,
+These models provide the complete data layer for the Ordinaut,
 including agents, tasks, task runs, work queuing, and audit logging.
 """
 

@@ -8,7 +8,7 @@ and scope management. These endpoints are primarily for administrative use.
 from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Body
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from pydantic import BaseModel, Field
@@ -16,6 +16,10 @@ from pydantic import BaseModel, Field
 from ..models import Agent, AuditLog
 from ..schemas import AgentResponse, OperationResponse
 from ..dependencies import get_db, require_scopes
+from ..auth import (
+    jwt_manager, agent_authenticator, AgentCredentials, 
+    TokenResponse, TokenRequest, get_jwt_manager
+)
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
@@ -269,3 +273,190 @@ async def delete_agent(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete agent: {str(e)}"
         )
+
+
+# Authentication endpoints
+@router.post("/auth/token", response_model=TokenResponse, status_code=status.HTTP_200_OK)
+async def authenticate_agent(
+    credentials: AgentCredentials,
+    db: Session = Depends(get_db)
+) -> TokenResponse:
+    """
+    Authenticate agent and receive JWT tokens.
+    
+    Validates agent credentials and returns access and refresh tokens.
+    The access token is used for API authentication, while the refresh
+    token can be used to obtain new access tokens.
+    
+    **Note**: Currently uses agent ID for authentication. In production,
+    implement proper password-based authentication with hashed credentials.
+    """
+    # Authenticate the agent
+    agent = agent_authenticator.authenticate_agent(credentials, db)
+    
+    if not agent:
+        # Log authentication attempt
+        from observability.logging import api_logger
+        api_logger.warning(
+            f"Authentication failed for agent",
+            agent_id=credentials.agent_id
+        )
+        
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid agent credentials",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    
+    # Generate JWT tokens
+    tokens = jwt_manager.generate_tokens(agent)
+    
+    # Log successful authentication
+    audit_log = AuditLog(
+        actor_agent_id=agent.id,
+        action="agent.authenticated",
+        subject_id=agent.id,
+        details={"method": "credentials"}
+    )
+    db.add(audit_log)
+    db.commit()
+    
+    return tokens
+
+
+@router.post("/auth/refresh", response_model=TokenResponse)
+async def refresh_token(
+    token_request: TokenRequest,
+    db: Session = Depends(get_db)
+) -> TokenResponse:
+    """
+    Refresh access token using refresh token.
+    
+    Validates the provided refresh token and generates a new access token
+    with updated expiration. The refresh token remains valid until its
+    original expiration date.
+    """
+    try:
+        # Refresh the tokens
+        tokens = jwt_manager.refresh_access_token(token_request.refresh_token, db)
+        
+        return tokens
+        
+    except HTTPException:
+        # Re-raise authentication errors
+        raise
+    except Exception as e:
+        from observability.logging import api_logger
+        api_logger.error(f"Token refresh failed: {e}")
+        
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Token refresh service error"
+        )
+
+
+@router.post("/auth/revoke", response_model=OperationResponse)
+async def revoke_token(
+    token_request: TokenRequest,
+    db: Session = Depends(get_db)
+) -> OperationResponse:
+    """
+    Revoke a JWT token.
+    
+    Adds the token to the revocation list, making it invalid for future
+    authentication. Both access and refresh tokens can be revoked.
+    """
+    try:
+        # Revoke the token
+        success = jwt_manager.revoke_token(token_request.refresh_token)
+        
+        if success:
+            # Log token revocation
+            try:
+                token_data = jwt_manager.verify_token(token_request.refresh_token)
+                audit_log = AuditLog(
+                    actor_agent_id=token_data.agent_id,
+                    action="token.revoked",
+                    subject_id=token_data.agent_id,
+                    details={"token_type": token_data.token_type}
+                )
+                db.add(audit_log)
+                db.commit()
+            except:
+                # Token already invalid, but revocation succeeded
+                pass
+        
+        return OperationResponse(
+            success=success,
+            message="Token revoked successfully" if success else "Token was already invalid"
+        )
+        
+    except Exception as e:
+        from observability.logging import api_logger
+        api_logger.error(f"Token revocation failed: {e}")
+        
+        return OperationResponse(
+            success=True,  # Consider invalid tokens as successfully revoked
+            message="Token revocation completed"
+        )
+
+
+class AgentCredentialsResponse(BaseModel):
+    """Response model for agent credentials creation."""
+    agent_id: str = Field(..., description="Agent identifier")
+    agent_secret: str = Field(..., description="Agent secret for authentication")
+    message: str = Field(..., description="Success message")
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "agent_id": "550e8400-e29b-41d4-a716-446655440000",
+                "agent_secret": "secure-secret-key",
+                "message": "Agent credentials created successfully"
+            }
+        }
+
+
+@router.post("/{agent_id}/credentials", response_model=AgentCredentialsResponse)
+async def create_agent_credentials(
+    agent_id: UUID,
+    password: Optional[str] = Body(None, description="Optional password for agent"),
+    db: Session = Depends(get_db),
+    current_agent: Agent = Depends(require_scopes("admin"))
+) -> AgentCredentialsResponse:
+    """
+    Create or reset agent credentials.
+    
+    Generates authentication credentials for an agent. If no password is
+    provided, a random secret will be generated. Only agents with 'admin'
+    scope can create credentials for other agents.
+    
+    **Security Note**: The generated secret is only shown once during creation.
+    Store it securely as it cannot be retrieved later.
+    """
+    # Get the target agent
+    agent = db.query(Agent).filter(Agent.id == agent_id).first()
+    if not agent:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Agent {agent_id} not found"
+        )
+    
+    # Create credentials
+    credentials = agent_authenticator.create_agent_credentials(agent, password)
+    
+    # Log credential creation
+    audit_log = AuditLog(
+        actor_agent_id=current_agent.id,
+        action="agent.credentials_created",
+        subject_id=agent.id,
+        details={"created_by": current_agent.name}
+    )
+    db.add(audit_log)
+    db.commit()
+    
+    return AgentCredentialsResponse(
+        agent_id=credentials["agent_id"],
+        agent_secret=credentials["agent_secret"],
+        message="Agent credentials created successfully"
+    )

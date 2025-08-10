@@ -1,5 +1,5 @@
 """
-Prometheus metrics collection for Personal Agent Orchestrator.
+Prometheus metrics collection for Ordinaut.
 
 Provides comprehensive metrics for all system components including
 task execution, pipeline steps, scheduler performance, worker health,
@@ -19,7 +19,7 @@ metrics_registry = CollectorRegistry()
 
 
 class OrchestrationMetrics:
-    """Comprehensive metrics for Personal Agent Orchestrator."""
+    """Comprehensive metrics for Ordinaut."""
     
     def __init__(self, registry: CollectorRegistry = None):
         self.registry = registry or metrics_registry
@@ -177,6 +177,49 @@ class OrchestrationMetrics:
             ['schedule_kind'],
             registry=self.registry
         )
+        
+        # Security metrics
+        self.security_events_total = Counter(
+            'orchestrator_security_events_total',
+            'Total security events detected',
+            ['event_type', 'severity'],
+            registry=self.registry
+        )
+        
+        self.authentication_attempts_total = Counter(
+            'orchestrator_authentication_attempts_total',
+            'Total authentication attempts',
+            ['method', 'result'],
+            registry=self.registry
+        )
+        
+        self.jwt_tokens_issued_total = Counter(
+            'orchestrator_jwt_tokens_issued_total',
+            'Total JWT tokens issued',
+            ['agent_id', 'token_type'],
+            registry=self.registry
+        )
+        
+        self.jwt_tokens_revoked_total = Counter(
+            'orchestrator_jwt_tokens_revoked_total',
+            'Total JWT tokens revoked',
+            ['reason'],
+            registry=self.registry
+        )
+        
+        self.rate_limit_violations_total = Counter(
+            'orchestrator_rate_limit_violations_total',
+            'Rate limit violations by client',
+            ['client_ip', 'endpoint'],
+            registry=self.registry
+        )
+        
+        self.blocked_requests_total = Counter(
+            'orchestrator_blocked_requests_total',
+            'Requests blocked by security middleware',
+            ['reason', 'client_ip'],
+            registry=self.registry
+        )
     
     def record_step_execution(self, tool_addr: str, step_id: str, task_id: str, 
                             duration: float, success: bool, error_type: Optional[str] = None):
@@ -288,6 +331,45 @@ class OrchestrationMetrics:
     def record_scheduler_job_created(self, schedule_kind: str):
         """Record scheduler job creation."""
         self.scheduler_jobs_created_total.labels(schedule_kind=schedule_kind).inc()
+    
+    def record_security_event(self, event_type: str, severity: str):
+        """Record security event."""
+        self.security_events_total.labels(
+            event_type=event_type,
+            severity=severity
+        ).inc()
+    
+    def record_authentication_attempt(self, method: str, result: str):
+        """Record authentication attempt."""
+        self.authentication_attempts_total.labels(
+            method=method,
+            result=result
+        ).inc()
+    
+    def record_jwt_token_issued(self, agent_id: str, token_type: str):
+        """Record JWT token issuance."""
+        self.jwt_tokens_issued_total.labels(
+            agent_id=agent_id,
+            token_type=token_type
+        ).inc()
+    
+    def record_jwt_token_revoked(self, reason: str = "manual"):
+        """Record JWT token revocation."""
+        self.jwt_tokens_revoked_total.labels(reason=reason).inc()
+    
+    def record_rate_limit_violation(self, client_ip: str, endpoint: str):
+        """Record rate limit violation."""
+        self.rate_limit_violations_total.labels(
+            client_ip=client_ip,
+            endpoint=endpoint
+        ).inc()
+    
+    def record_blocked_request(self, reason: str, client_ip: str):
+        """Record blocked request."""
+        self.blocked_requests_total.labels(
+            reason=reason,
+            client_ip=client_ip
+        ).inc()
 
 
 # Global metrics instance

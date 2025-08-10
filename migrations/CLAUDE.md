@@ -1,8 +1,8 @@
-# Database Migrations - Personal Agent Orchestrator
+# Database Migrations - Ordinaut
 
 ## Purpose & Mission
 
-The `migrations/` directory contains the complete database schema and migration scripts for the Personal Agent Orchestrator's PostgreSQL backend. This implements a **production-grade, ACID-compliant database** with specialized patterns for:
+The `migrations/` directory contains the complete database schema and migration scripts for the Ordinaut's PostgreSQL backend. This implements a **production-grade, ACID-compliant database** with specialized patterns for:
 
 - **SKIP LOCKED job queues** for safe concurrent work distribution
 - **Temporal task scheduling** with timezone and RRULE support
@@ -654,4 +654,4 @@ WHERE schemaname = 'public'
 ORDER BY idx_tup_read DESC;
 ```
 
-This migrations directory provides the foundation for a robust, scalable, and maintainable database backend that supports the Personal Agent Orchestrator's mission of coordinated AI agent management with bulletproof reliability.
+This migrations directory provides the foundation for a robust, scalable, and maintainable database backend that supports the Ordinaut's mission of coordinated AI agent management with bulletproof reliability.

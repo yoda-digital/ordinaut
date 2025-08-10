@@ -1,4 +1,4 @@
-# Personal Agent Orchestrator - Observability System
+# Ordinaut - Observability System
 
 Comprehensive monitoring, logging, and alerting system implementing the requirements from `plan.md` section 11 for >99.9% uptime.
 

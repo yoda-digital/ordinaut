@@ -1,4 +1,4 @@
-# Integration Tests - Personal Agent Orchestrator
+# Integration Tests - Ordinaut
 
 ## Purpose and Testing Scope
 
@@ -638,4 +638,4 @@ pytest tests/integration/ -n 2 --dist worksteal
 - Realistic load and performance validation
 - Proper error handling and recovery verification
 
-This integration testing framework ensures the Personal Agent Orchestrator components work correctly together and handle real-world scenarios reliably.
+This integration testing framework ensures the Ordinaut components work correctly together and handle real-world scenarios reliably.

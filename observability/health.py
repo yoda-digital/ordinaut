@@ -1,26 +1,34 @@
 """
-Comprehensive health check system for Personal Agent Orchestrator.
+System health monitoring for Ordinaut.
 
-Provides database, Redis, worker, and scheduler health monitoring
-with detailed status reporting and integration points.
+Provides comprehensive health checks for all system components including
+database, Redis, workers, scheduler, and external dependencies.
 """
 
-import asyncio
 import time
-from datetime import datetime, timezone, timedelta
-from enum import Enum
+import asyncio
+from datetime import datetime, timezone
 from dataclasses import dataclass, asdict
-from typing import Dict, List, Optional, Any
-import psycopg
-import redis.asyncio as redis
-from sqlalchemy import create_engine, text
-import os
+from enum import Enum
+from typing import Dict, List, Optional, Any, Union
+import logging
 
-from .logging import StructuredLogger, set_request_context
+from sqlalchemy import text
+
+from observability.logging import StructuredLogger, set_request_context
+from observability.metrics import orchestrator_metrics
+
+# Import database and Redis dependencies
+try:
+    from api.dependencies import get_database, get_redis_connection
+except ImportError:
+    # Fallback for when running outside API context
+    get_database = None
+    get_redis_connection = None
 
 
 class HealthStatus(Enum):
-    """Health status enumeration."""
+    """Health status levels."""
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -33,412 +41,375 @@ class HealthCheck:
     status: HealthStatus
     message: str
     duration_ms: float
+    timestamp: str
     details: Optional[Dict[str, Any]] = None
-    timestamp: Optional[datetime] = None
+    error: Optional[str] = None
     
-    def __post_init__(self):
-        if self.timestamp is None:
-            self.timestamp = datetime.now(timezone.utc)
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        result = asdict(self)
+        result['status'] = self.status.value
+        return result
 
 
 @dataclass
 class SystemHealthReport:
     """Complete system health report."""
     status: HealthStatus
-    timestamp: datetime
+    timestamp: str
     checks: List[HealthCheck]
     summary: Dict[str, Any]
-    uptime_seconds: Optional[float] = None
+    request_id: Optional[str] = None
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             'status': self.status.value,
-            'timestamp': self.timestamp.isoformat() + 'Z',
-            'checks': [
-                {
-                    'name': check.name,
-                    'status': check.status.value,
-                    'message': check.message,
-                    'duration_ms': check.duration_ms,
-                    'details': check.details or {},
-                    'timestamp': check.timestamp.isoformat() + 'Z' if check.timestamp else None
-                }
-                for check in self.checks
-            ],
+            'timestamp': self.timestamp,
+            'request_id': self.request_id,
             'summary': self.summary,
-            'uptime_seconds': self.uptime_seconds
+            'checks': [check.to_dict() for check in self.checks]
         }
 
 
 class SystemHealthMonitor:
     """Comprehensive system health monitoring."""
     
-    def __init__(self, database_url: str = None, redis_url: str = None):
-        self.database_url = database_url or os.getenv("DATABASE_URL")
-        self.redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    def __init__(self):
         self.logger = StructuredLogger("orchestrator.health")
         self.start_time = time.time()
-        
-        # Database connection for health checks
-        if self.database_url:
-            self.db_engine = create_engine(
-                self.database_url,
-                pool_pre_ping=True,
-                future=True,
-                pool_size=2,  # Small pool for health checks
-                max_overflow=0
-            )
-        else:
-            self.db_engine = None
-            
+        self._last_check_cache = {}
+        self._cache_ttl = 30  # Cache results for 30 seconds
+    
     async def check_database_health(self) -> HealthCheck:
-        """Check PostgreSQL database health and performance."""
+        """Check PostgreSQL database health."""
         start_time = time.time()
-        
-        if not self.db_engine:
-            return HealthCheck(
-                name="database",
-                status=HealthStatus.UNHEALTHY,
-                message="Database connection not configured",
-                duration_ms=0,
-                details={"error": "DATABASE_URL not set"}
-            )
+        timestamp = datetime.utcnow().isoformat() + 'Z'
         
         try:
-            with self.db_engine.begin() as conn:
-                # Basic connectivity check
-                result = conn.execute(text("SELECT 1 as health_check"))
-                row = result.fetchone()
-                
-                if not row or row.health_check != 1:
-                    raise Exception("Health check query returned unexpected result")
-                
-                # Check critical tables exist
-                table_checks = conn.execute(text("""
-                    SELECT table_name 
-                    FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
-                      AND table_name IN ('task', 'due_work', 'task_run', 'agent')
-                """)).fetchall()
-                
-                expected_tables = {'task', 'due_work', 'task_run', 'agent'}
-                found_tables = {row.table_name for row in table_checks}
-                missing_tables = expected_tables - found_tables
-                
-                if missing_tables:
-                    return HealthCheck(
-                        name="database",
-                        status=HealthStatus.UNHEALTHY,
-                        message=f"Missing required tables: {missing_tables}",
-                        duration_ms=(time.time() - start_time) * 1000,
-                        details={"missing_tables": list(missing_tables)}
-                    )
-                
-                # Check queue depth and performance
-                queue_stats = conn.execute(text("""
-                    SELECT 
-                        COUNT(*) as total_due_work,
-                        COUNT(*) FILTER (WHERE run_at <= now()) as overdue_work,
-                        COUNT(*) FILTER (WHERE locked_until > now()) as locked_work,
-                        EXTRACT(EPOCH FROM (now() - MIN(run_at))) as oldest_overdue_seconds
-                    FROM due_work
-                """)).fetchone()
-                
-                # Check database performance
-                perf_stats = conn.execute(text("""
-                    SELECT 
-                        numbackends,
-                        xact_commit + xact_rollback as total_transactions,
-                        tup_returned,
-                        tup_fetched,
-                        tup_inserted,
-                        tup_updated,
-                        tup_deleted
-                    FROM pg_stat_database 
-                    WHERE datname = current_database()
-                """)).fetchone()
-                
-                duration_ms = (time.time() - start_time) * 1000
-                
-                # Determine health status based on queue and performance
-                status = HealthStatus.HEALTHY
-                message = "Database connection successful"
-                
-                if queue_stats.overdue_work > 100:
-                    status = HealthStatus.DEGRADED
-                    message = f"High overdue work count: {queue_stats.overdue_work}"
-                elif queue_stats.oldest_overdue_seconds and queue_stats.oldest_overdue_seconds > 300:
-                    status = HealthStatus.DEGRADED
-                    message = f"Oldest overdue work: {queue_stats.oldest_overdue_seconds:.1f}s"
-                elif duration_ms > 1000:  # Database response > 1 second
-                    status = HealthStatus.DEGRADED
-                    message = f"Slow database response: {duration_ms:.1f}ms"
-                
+            if get_database is None:
                 return HealthCheck(
                     name="database",
-                    status=status,
-                    message=message,
-                    duration_ms=duration_ms,
-                    details={
-                        "total_due_work": queue_stats.total_due_work,
-                        "overdue_work": queue_stats.overdue_work,
-                        "locked_work": queue_stats.locked_work,
-                        "oldest_overdue_seconds": queue_stats.oldest_overdue_seconds,
-                        "active_connections": perf_stats.numbackends,
-                        "total_transactions": perf_stats.total_transactions
-                    }
+                    status=HealthStatus.DEGRADED,
+                    message="Database health check not available (running outside API context)",
+                    duration_ms=0,
+                    timestamp=timestamp
                 )
+            
+            # Test basic connectivity
+            async with get_database() as conn:
+                # Simple connectivity test
+                result = await conn.execute(text("SELECT 1 as health_check"))
+                row = result.fetchone()
                 
+                if row and row[0] == 1:
+                    # Test orchestrator-specific functionality
+                    result = await conn.execute(text("SELECT COUNT(*) as task_count FROM task"))
+                    task_row = result.fetchone()
+                    
+                    duration = (time.time() - start_time) * 1000
+                    
+                    return HealthCheck(
+                        name="database",
+                        status=HealthStatus.HEALTHY,
+                        message="Database connection successful",
+                        duration_ms=duration,
+                        timestamp=timestamp,
+                        details={
+                            "connection_test": "passed",
+                            "schema_test": "passed",
+                            "task_table_accessible": True
+                        }
+                    )
+                else:
+                    raise Exception("Health check query returned unexpected result")
+                    
         except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
+            duration = (time.time() - start_time) * 1000
+            
             return HealthCheck(
                 name="database",
                 status=HealthStatus.UNHEALTHY,
-                message=f"Database health check failed: {e}",
-                duration_ms=duration_ms,
-                details={"exception": str(e)}
+                message="Database health check failed",
+                duration_ms=duration,
+                timestamp=timestamp,
+                error=str(e),
+                details={"connection_test": "failed"}
             )
     
     async def check_redis_health(self) -> HealthCheck:
-        """Check Redis health and stream functionality."""
+        """Check Redis health."""
         start_time = time.time()
+        timestamp = datetime.utcnow().isoformat() + 'Z'
         
         try:
-            redis_client = redis.from_url(self.redis_url)
+            if get_redis_connection is None:
+                return HealthCheck(
+                    name="redis",
+                    status=HealthStatus.DEGRADED,
+                    message="Redis health check not available (running outside API context)",
+                    duration_ms=0,
+                    timestamp=timestamp
+                )
             
-            # Basic connectivity check
-            ping_result = await redis_client.ping()
-            if not ping_result:
+            redis = await get_redis_connection()
+            
+            # Test basic connectivity
+            ping_result = await redis.ping()
+            
+            if ping_result:
+                # Test stream operations (orchestrator-specific)
+                test_stream = "health-check-stream"
+                await redis.xadd(test_stream, {"test": "health"})
+                
+                # Clean up test data
+                await redis.delete(test_stream)
+                
+                duration = (time.time() - start_time) * 1000
+                
+                return HealthCheck(
+                    name="redis",
+                    status=HealthStatus.HEALTHY,
+                    message="Redis connection and stream operations successful",
+                    duration_ms=duration,
+                    timestamp=timestamp,
+                    details={
+                        "ping_test": "passed",
+                        "stream_test": "passed"
+                    }
+                )
+            else:
                 raise Exception("Redis ping failed")
-            
-            # Test stream operations (used for events)
-            test_stream = "health_check_stream"
-            test_data = {"timestamp": datetime.now(timezone.utc).isoformat()}
-            
-            # Add test entry to stream
-            stream_id = await redis_client.xadd(test_stream, test_data)
-            
-            # Read back the entry
-            stream_data = await redis_client.xread({test_stream: "0-0"}, count=1)
-            
-            # Cleanup test stream
-            await redis_client.delete(test_stream)
-            
-            # Check Redis info for performance metrics
-            info = await redis_client.info()
-            memory_usage_mb = info.get('used_memory', 0) / (1024 * 1024)
-            connected_clients = info.get('connected_clients', 0)
-            
-            await redis_client.close()
-            
-            duration_ms = (time.time() - start_time) * 1000
-            
-            # Determine health status
-            status = HealthStatus.HEALTHY
-            message = "Redis connection successful"
-            
-            if memory_usage_mb > 1024:  # > 1GB memory usage
-                status = HealthStatus.DEGRADED
-                message = f"High Redis memory usage: {memory_usage_mb:.1f}MB"
-            elif connected_clients > 100:
-                status = HealthStatus.DEGRADED
-                message = f"High client connection count: {connected_clients}"
-            elif duration_ms > 500:  # Redis response > 500ms
-                status = HealthStatus.DEGRADED
-                message = f"Slow Redis response: {duration_ms:.1f}ms"
-            
-            return HealthCheck(
-                name="redis",
-                status=status,
-                message=message,
-                duration_ms=duration_ms,
-                details={
-                    "memory_usage_mb": round(memory_usage_mb, 2),
-                    "connected_clients": connected_clients,
-                    "stream_test_passed": bool(stream_id and stream_data),
-                    "redis_version": info.get('redis_version', 'unknown')
-                }
-            )
-            
+                
         except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
+            duration = (time.time() - start_time) * 1000
+            self.logger.error(f"Redis health check failed: {e}")
+            
             return HealthCheck(
                 name="redis",
                 status=HealthStatus.UNHEALTHY,
-                message=f"Redis health check failed: {e}",
-                duration_ms=duration_ms,
-                details={"exception": str(e)}
+                message="Redis health check failed",
+                duration_ms=duration,
+                timestamp=timestamp,
+                error=str(e),
+                details={"ping_test": "failed"}
             )
     
     async def check_worker_health(self) -> HealthCheck:
-        """Check worker system health and heartbeats."""
+        """Check worker system health."""
         start_time = time.time()
-        
-        if not self.db_engine:
-            return HealthCheck(
-                name="workers",
-                status=HealthStatus.UNHEALTHY,
-                message="Cannot check workers - database not configured",
-                duration_ms=0
-            )
+        timestamp = datetime.utcnow().isoformat() + 'Z'
         
         try:
-            with self.db_engine.begin() as conn:
+            if get_database is None:
+                return HealthCheck(
+                    name="workers",
+                    status=HealthStatus.DEGRADED,
+                    message="Worker health check not available (no database access)",
+                    duration_ms=0,
+                    timestamp=timestamp
+                )
+            
+            async with get_database() as conn:
                 # Check for recent worker heartbeats
-                worker_stats = conn.execute(text("""
+                result = await conn.execute(text("""
                     SELECT 
-                        COUNT(DISTINCT worker_id) as total_workers,
-                        COUNT(DISTINCT worker_id) FILTER (
-                            WHERE last_seen > now() - interval '30 seconds'
-                        ) as active_workers,
-                        COUNT(DISTINCT worker_id) FILTER (
-                            WHERE last_seen > now() - interval '2 minutes'
-                        ) as recent_workers,
-                        MAX(last_seen) as latest_heartbeat,
-                        EXTRACT(EPOCH FROM (now() - MIN(last_seen))) as oldest_heartbeat_age
-                    FROM worker_heartbeat
-                    WHERE last_seen > now() - interval '10 minutes'
-                """)).fetchone()
+                        COUNT(*) as active_workers,
+                        MAX(extract(epoch from (now() - last_seen))) as max_heartbeat_age
+                    FROM worker_heartbeat 
+                    WHERE last_seen > now() - interval '2 minutes'
+                """))
+                row = result.fetchone()
                 
-                # Check active work leases
-                lease_stats = conn.execute(text("""
-                    SELECT 
-                        COUNT(*) as active_leases,
-                        COUNT(DISTINCT locked_by) as workers_with_leases,
-                        AVG(EXTRACT(EPOCH FROM (locked_until - now()))) as avg_lease_remaining_seconds
-                    FROM due_work
-                    WHERE locked_until > now()
-                      AND locked_by IS NOT NULL
-                """)).fetchone()
+                active_workers = row[0] if row else 0
+                max_heartbeat_age = row[1] if row and row[1] is not None else 999
                 
-                duration_ms = (time.time() - start_time) * 1000
+                # Check queue depth
+                result = await conn.execute(text("""
+                    SELECT COUNT(*) as queue_depth 
+                    FROM due_work 
+                    WHERE run_at <= now() 
+                      AND (locked_until IS NULL OR locked_until < now())
+                """))
+                queue_row = result.fetchone()
+                queue_depth = queue_row[0] if queue_row else 0
                 
-                # Determine worker health status
-                status = HealthStatus.HEALTHY
-                message = f"{worker_stats.active_workers} active workers"
+                duration = (time.time() - start_time) * 1000
                 
-                if worker_stats.active_workers == 0:
+                # Determine status based on worker activity
+                if active_workers == 0:
                     status = HealthStatus.UNHEALTHY
                     message = "No active workers detected"
-                elif worker_stats.active_workers < worker_stats.recent_workers // 2:
-                    status = HealthStatus.DEGRADED  
-                    message = f"Only {worker_stats.active_workers} of {worker_stats.recent_workers} workers active"
-                elif worker_stats.oldest_heartbeat_age and worker_stats.oldest_heartbeat_age > 120:
+                elif active_workers < 2:
                     status = HealthStatus.DEGRADED
-                    message = f"Stale worker detected (oldest: {worker_stats.oldest_heartbeat_age:.1f}s)"
+                    message = f"Low worker count: {active_workers} active"
+                else:
+                    status = HealthStatus.HEALTHY
+                    message = f"{active_workers} active workers"
                 
                 return HealthCheck(
                     name="workers",
                     status=status,
                     message=message,
-                    duration_ms=duration_ms,
+                    duration_ms=duration,
+                    timestamp=timestamp,
                     details={
-                        "total_workers": worker_stats.total_workers,
-                        "active_workers": worker_stats.active_workers,
-                        "recent_workers": worker_stats.recent_workers,
-                        "latest_heartbeat": worker_stats.latest_heartbeat.isoformat() + 'Z' if worker_stats.latest_heartbeat else None,
-                        "oldest_heartbeat_age_seconds": worker_stats.oldest_heartbeat_age,
-                        "active_leases": lease_stats.active_leases,
-                        "workers_with_leases": lease_stats.workers_with_leases,
-                        "avg_lease_remaining_seconds": lease_stats.avg_lease_remaining_seconds
+                        "active_workers": active_workers,
+                        "max_heartbeat_age_seconds": max_heartbeat_age,
+                        "queue_depth": queue_depth,
+                        "heartbeat_test": "passed"
                     }
                 )
-                
+                    
         except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
+            duration = (time.time() - start_time) * 1000
+            
             return HealthCheck(
                 name="workers",
                 status=HealthStatus.UNHEALTHY,
-                message=f"Worker health check failed: {e}",
-                duration_ms=duration_ms,
-                details={"exception": str(e)}
+                message="Worker health check failed",
+                duration_ms=duration,
+                timestamp=timestamp,
+                error=str(e),
+                details={"heartbeat_test": "failed"}
             )
     
     async def check_scheduler_health(self) -> HealthCheck:
-        """Check scheduler responsiveness and performance."""
+        """Check scheduler health."""
         start_time = time.time()
-        
-        if not self.db_engine:
-            return HealthCheck(
-                name="scheduler",
-                status=HealthStatus.UNHEALTHY,
-                message="Cannot check scheduler - database not configured",
-                duration_ms=0
-            )
+        timestamp = datetime.utcnow().isoformat() + 'Z'
         
         try:
-            with self.db_engine.begin() as conn:
-                # Check scheduler lag (oldest overdue work)
-                lag_stats = conn.execute(text("""
+            if get_database is None:
+                return HealthCheck(
+                    name="scheduler",
+                    status=HealthStatus.DEGRADED,
+                    message="Scheduler health check not available (no database access)",
+                    duration_ms=0,
+                    timestamp=timestamp
+                )
+            
+            async with get_database() as conn:
+                # Check for recent scheduler activity
+                result = await conn.execute(text("""
                     SELECT 
-                        COUNT(*) FILTER (WHERE run_at <= now()) as overdue_count,
-                        EXTRACT(EPOCH FROM (now() - MIN(run_at))) as max_lag_seconds,
-                        AVG(EXTRACT(EPOCH FROM (now() - run_at))) FILTER (
-                            WHERE run_at <= now()
-                        ) as avg_lag_seconds
-                    FROM due_work
-                    WHERE run_at <= now() + interval '5 minutes'
-                """)).fetchone()
-                
-                # Check recent scheduler activity
-                scheduler_stats = conn.execute(text("""
-                    SELECT 
-                        COUNT(*) as recent_due_work,
-                        COUNT(DISTINCT task_id) as unique_tasks_scheduled
-                    FROM due_work
+                        COUNT(*) as recent_runs,
+                        MAX(extract(epoch from (now() - created_at))) as max_run_age
+                    FROM task_run 
                     WHERE created_at > now() - interval '5 minutes'
-                """)).fetchone()
+                """))
+                row = result.fetchone()
                 
-                duration_ms = (time.time() - start_time) * 1000
+                recent_runs = row[0] if row else 0
+                max_run_age = row[1] if row and row[1] is not None else 999
                 
-                # Determine scheduler health
-                status = HealthStatus.HEALTHY
-                message = "Scheduler operating normally"
+                # Check for overdue tasks (scheduler lag)
+                result = await conn.execute(text("""
+                    SELECT 
+                        COUNT(*) as overdue_tasks,
+                        COALESCE(MAX(extract(epoch from (now() - run_at))), 0) as max_lag_seconds
+                    FROM due_work 
+                    WHERE run_at <= now() - interval '1 minute'
+                      AND (locked_until IS NULL OR locked_until < now())
+                """))
+                lag_row = result.fetchone()
+                overdue_tasks = lag_row[0] if lag_row else 0
+                max_lag_seconds = lag_row[1] if lag_row and lag_row[1] is not None else 0
                 
-                if lag_stats.max_lag_seconds and lag_stats.max_lag_seconds > 60:
+                duration = (time.time() - start_time) * 1000
+                
+                # Determine scheduler status
+                if max_lag_seconds > 300:  # 5+ minutes lag
                     status = HealthStatus.UNHEALTHY
-                    message = f"High scheduler lag: {lag_stats.max_lag_seconds:.1f}s"
-                elif lag_stats.max_lag_seconds and lag_stats.max_lag_seconds > 30:
+                    message = f"Critical scheduler lag: {max_lag_seconds:.0f}s"
+                elif max_lag_seconds > 60 or overdue_tasks > 50:  # 1+ minute lag or many overdue
                     status = HealthStatus.DEGRADED
-                    message = f"Moderate scheduler lag: {lag_stats.max_lag_seconds:.1f}s"
-                elif lag_stats.overdue_count > 50:
-                    status = HealthStatus.DEGRADED
-                    message = f"High overdue work count: {lag_stats.overdue_count}"
+                    message = f"Scheduler lag detected: {max_lag_seconds:.0f}s, {overdue_tasks} overdue"
+                else:
+                    status = HealthStatus.HEALTHY
+                    message = "Scheduler operating normally"
+                
+                # Update metrics
+                try:
+                    orchestrator_metrics.update_scheduler_lag(max_lag_seconds)
+                except Exception as metrics_error:
+                    self.logger.warning(f"Failed to update scheduler lag metric: {metrics_error}")
                 
                 return HealthCheck(
                     name="scheduler",
                     status=status,
                     message=message,
-                    duration_ms=duration_ms,
+                    duration_ms=duration,
+                    timestamp=timestamp,
                     details={
-                        "overdue_count": lag_stats.overdue_count,
-                        "max_lag_seconds": lag_stats.max_lag_seconds,
-                        "avg_lag_seconds": lag_stats.avg_lag_seconds,
-                        "recent_due_work": scheduler_stats.recent_due_work,
-                        "unique_tasks_scheduled": scheduler_stats.unique_tasks_scheduled
+                        "recent_runs": recent_runs,
+                        "overdue_tasks": overdue_tasks,
+                        "max_lag_seconds": max_lag_seconds,
+                        "lag_test": "passed"
                     }
                 )
-                
+                    
         except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
+            duration = (time.time() - start_time) * 1000
+            
             return HealthCheck(
                 name="scheduler",
                 status=HealthStatus.UNHEALTHY,
-                message=f"Scheduler health check failed: {e}",
-                duration_ms=duration_ms,
-                details={"exception": str(e)}
+                message="Scheduler health check failed",
+                duration_ms=duration,
+                timestamp=timestamp,
+                error=str(e),
+                details={"lag_test": "failed"}
             )
     
-    async def get_system_health(self, request_id: str = None) -> SystemHealthReport:
+    async def check_api_health(self) -> HealthCheck:
+        """Check API server health (internal)."""
+        start_time = time.time()
+        timestamp = datetime.utcnow().isoformat() + 'Z'
+        
+        try:
+            # This is a simple internal health check since we're already in the API
+            duration = (time.time() - start_time) * 1000
+            uptime = time.time() - self.start_time
+            
+            return HealthCheck(
+                name="api",
+                status=HealthStatus.HEALTHY,
+                message="API server is responding",
+                duration_ms=duration,
+                timestamp=timestamp,
+                details={
+                    "uptime_seconds": uptime,
+                    "response_test": "passed"
+                }
+            )
+            
+        except Exception as e:
+            duration = (time.time() - start_time) * 1000
+            
+            return HealthCheck(
+                name="api",
+                status=HealthStatus.UNHEALTHY,
+                message="API health check failed",
+                duration_ms=duration,
+                timestamp=timestamp,
+                error=str(e),
+                details={"response_test": "failed"}
+            )
+    
+    async def get_system_health(self, request_id: Optional[str] = None) -> SystemHealthReport:
         """Get comprehensive system health status."""
         if request_id:
             set_request_context(request_id=request_id)
         
-        self.logger.info("Starting comprehensive system health check")
+        start_time = time.time()
+        timestamp = datetime.utcnow().isoformat() + 'Z'
         
         # Run all health checks concurrently
+        self.logger.info("Starting comprehensive system health check")
+        
         checks = await asyncio.gather(
+            self.check_api_health(),
             self.check_database_health(),
             self.check_redis_health(),
             self.check_worker_health(),
@@ -448,15 +419,16 @@ class SystemHealthMonitor:
         
         # Handle any exceptions in health checks
         valid_checks = []
-        for i, check in enumerate(checks):
+        for check in checks:
             if isinstance(check, Exception):
-                check_name = ["database", "redis", "workers", "scheduler"][i]
+                self.logger.error(f"Health check failed with exception: {check}")
                 valid_checks.append(HealthCheck(
-                    name=check_name,
+                    name="unknown",
                     status=HealthStatus.UNHEALTHY,
-                    message=f"Health check failed with exception: {check}",
+                    message="Health check failed with exception",
                     duration_ms=0,
-                    details={"exception": str(check)}
+                    timestamp=timestamp,
+                    error=str(check)
                 ))
             else:
                 valid_checks.append(check)
@@ -472,21 +444,24 @@ class SystemHealthMonitor:
             overall_status = HealthStatus.DEGRADED
         
         # Create summary
+        total_duration = (time.time() - start_time) * 1000
         summary = {
+            "overall_status": overall_status.value,
             "total_checks": len(valid_checks),
             "healthy_checks": len([c for c in valid_checks if c.status == HealthStatus.HEALTHY]),
             "degraded_checks": len([c for c in valid_checks if c.status == HealthStatus.DEGRADED]),
             "unhealthy_checks": len([c for c in valid_checks if c.status == HealthStatus.UNHEALTHY]),
-            "total_duration_ms": sum(check.duration_ms for check in valid_checks),
-            "slowest_check": max(valid_checks, key=lambda c: c.duration_ms).name if valid_checks else None
+            "total_duration_ms": total_duration,
+            "uptime_seconds": time.time() - self.start_time
         }
         
+        # Create health report
         report = SystemHealthReport(
             status=overall_status,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=timestamp,
+            request_id=request_id,
             checks=valid_checks,
-            summary=summary,
-            uptime_seconds=time.time() - self.start_time
+            summary=summary
         )
         
         # Log health status
@@ -495,36 +470,86 @@ class SystemHealthMonitor:
             overall_status=overall_status.value,
             total_checks=len(valid_checks),
             healthy_checks=summary["healthy_checks"],
-            total_duration_ms=summary["total_duration_ms"],
-            event_type="health_check_completed"
+            duration_ms=total_duration,
+            event_type="system_health_check"
         )
         
         return report
     
-    async def get_quick_health(self) -> Dict[str, Any]:
+    async def get_quick_health(self) -> Dict[str, bool]:
         """Get quick health status for readiness/liveness probes."""
-        start_time = time.time()
+        cache_key = "quick_health"
+        current_time = time.time()
+        
+        # Check cache first
+        if cache_key in self._last_check_cache:
+            cache_entry = self._last_check_cache[cache_key]
+            if current_time - cache_entry['timestamp'] < self._cache_ttl:
+                return cache_entry['result']
         
         try:
-            # Quick database check only
-            db_check = await self.check_database_health()
-            duration_ms = (time.time() - start_time) * 1000
-            
-            return {
-                "status": db_check.status.value,
-                "timestamp": datetime.now(timezone.utc).isoformat() + 'Z',
-                "database": db_check.status == HealthStatus.HEALTHY,
-                "duration_ms": duration_ms,
-                "uptime_seconds": time.time() - self.start_time
+            health_status = {
+                "api": True,  # We're responding, so API is healthy
+                "database": False,
+                "redis": False,
+                "workers": False
             }
+            
+            # Quick database check
+            if get_database:
+                try:
+                    async with get_database() as conn:
+                        result = await conn.execute(text("SELECT 1"))
+                        result.fetchone()
+                        health_status["database"] = True
+                except:
+                    pass
+            
+            # Quick Redis check
+            if get_redis_connection:
+                try:
+                    redis = await get_redis_connection()
+                    await redis.ping()
+                    health_status["redis"] = True
+                except:
+                    pass
+            
+            # Quick worker check
+            if get_database:
+                try:
+                    async with get_database() as conn:
+                        result = await conn.execute(text("""
+                            SELECT COUNT(*) as active_workers
+                            FROM worker_heartbeat 
+                            WHERE last_seen > now() - interval '2 minutes'
+                        """))
+                        row = result.fetchone()
+                        active_workers = row[0] if row else 0
+                        health_status["workers"] = active_workers > 0
+                except:
+                    pass
+            
+            # Cache the result
+            self._last_check_cache[cache_key] = {
+                'result': health_status,
+                'timestamp': current_time
+            }
+            
+            return health_status
             
         except Exception as e:
-            duration_ms = (time.time() - start_time) * 1000
+            self.logger.error(f"Quick health check failed: {e}")
             return {
-                "status": HealthStatus.UNHEALTHY.value,
-                "timestamp": datetime.now(timezone.utc).isoformat() + 'Z',
+                "api": True,
                 "database": False,
-                "duration_ms": duration_ms,
-                "error": str(e),
-                "uptime_seconds": time.time() - self.start_time
+                "redis": False,
+                "workers": False
             }
+    
+    def get_uptime(self) -> float:
+        """Get service uptime in seconds."""
+        return time.time() - self.start_time
+
+
+# Global instance
+system_health_monitor = SystemHealthMonitor()

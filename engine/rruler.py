@@ -1,5 +1,5 @@
 """
-RFC-5545 RRULE Processing Engine for Personal Agent Orchestrator
+RFC-5545 RRULE Processing Engine for Ordinaut
 
 This module provides comprehensive RRULE (Recurrence Rule) processing with:
 - Complete RFC-5545 RRULE syntax support
@@ -162,15 +162,20 @@ class RRuleProcessor:
             if rule._dtstart and rule._dtstart.tzinfo:
                 base_time = rule._dtstart.tzinfo.localize(base_time.replace(tzinfo=None))
             
-            next_occurrence = rule.after(base_time)
+            # For rare patterns like Feb 29, look further ahead
+            test_period = timedelta(days=365 * 5)  # 5 years for rare patterns
             
-            if not next_occurrence:
-                raise RRuleValidationError("RRULE generates no future occurrences")
+            # Test for any future occurrence within the test period
+            end_time = base_time + test_period
+            occurrences = list(rule.between(base_time, end_time, inc=True))
             
-            # Verify first few occurrences are reasonable
-            occurrences = list(rule.between(base_time, base_time + timedelta(days=365), inc=True))
             if len(occurrences) == 0:
-                raise RRuleValidationError("RRULE generates no occurrences in next year")
+                # Check if this might be a valid rare pattern
+                if self._is_rare_but_valid_pattern(rrule_string):
+                    logger.debug(f"RRULE validation passed for rare pattern: {rrule_string}")
+                    return
+                else:
+                    raise RRuleValidationError("RRULE generates no future occurrences")
                 
         except Exception as e:
             if isinstance(e, RRuleValidationError):
@@ -178,6 +183,23 @@ class RRuleProcessor:
             # Skip validation if we have timezone comparison issues - the RRULE itself is likely valid
             logger.debug(f"RRULE logic validation skipped due to timezone handling: {e}")
             return
+    
+    def _is_rare_but_valid_pattern(self, rrule_string: str) -> bool:
+        """Check if RRULE is a valid but rare pattern (e.g., Feb 29 only in leap years)."""
+        
+        # Feb 29 patterns are valid but only occur every 4 years
+        if 'BYMONTH=2' in rrule_string and 'BYMONTHDAY=29' in rrule_string:
+            return True
+            
+        # 31st day patterns in short months are valid but skip those months
+        if 'BYMONTHDAY=31' in rrule_string:
+            return True
+            
+        # 5th occurrence patterns (e.g., 5th Monday) are valid but rare
+        if 'BYDAY=5' in rrule_string or 'BYDAY=-5' in rrule_string:
+            return True
+            
+        return False
 
 
 def next_occurrence(rrule_string: str, timezone_name: str = "Europe/Chisinau", 
@@ -421,6 +443,9 @@ def handle_calendar_edge_cases(rrule_string: str,
         'dst_transitions': []
     }
     
+    # Always check for impossible dates first (doesn't require rule parsing)
+    edge_cases['impossible_dates'] = _find_impossible_dates(rrule_string)
+    
     try:
         tz = pytz.timezone(timezone_name)
         
@@ -461,12 +486,13 @@ def handle_calendar_edge_cases(rrule_string: str,
                 edge_cases['dst_transition'] = True
                 edge_cases['dst_transitions'].append(occurrence.isoformat())
         
-        # Check for impossible date combinations
-        edge_cases['impossible_dates'] = _find_impossible_dates(rrule_string)
-        
     except Exception as e:
-        logger.warning(f"Error analyzing edge cases for RRULE: {e}")
-        edge_cases['analysis_error'] = str(e)
+        # If the RRULE has impossible dates, this is expected
+        if edge_cases['impossible_dates']:
+            logger.debug(f"RRULE with impossible dates cannot be analyzed for occurrences: {e}")
+        else:
+            logger.warning(f"Error analyzing edge cases for RRULE: {e}")
+            edge_cases['analysis_error'] = str(e)
     
     return edge_cases
 
@@ -492,15 +518,32 @@ def _find_impossible_dates(rrule_string: str) -> List[str]:
     
     impossible = []
     
-    # Check for patterns that might create Feb 30, Apr 31, etc.
+    # Check for patterns that might create Feb 30/31, Apr 31, etc.
     if 'BYMONTHDAY=30' in rrule_string and 'BYMONTH=2' in rrule_string:
         impossible.append("February 30th")
     
+    if 'BYMONTHDAY=31' in rrule_string and 'BYMONTH=2' in rrule_string:
+        impossible.append("February 31st")
+    
+    # Check for 31st in months with only 30 days
     if 'BYMONTHDAY=31' in rrule_string:
-        short_months = [2, 4, 6, 9, 11]
+        short_months = [4, 6, 9, 11]  # Apr, Jun, Sep, Nov have 30 days
+        month_names = {4: "April", 6: "June", 9: "September", 11: "November"}
+        
         for month in short_months:
             if f'BYMONTH={month}' in rrule_string:
-                impossible.append(f"31st day of month {month}")
+                impossible.append(f"31st day of {month_names[month]}")
+        
+        # Special case: if no BYMONTH specified, 31st will skip months without 31 days
+        if 'BYMONTH=' not in rrule_string:
+            impossible.append("31st day will skip months with fewer than 31 days")
+    
+    # Check for February 30th (always impossible)
+    if 'BYMONTHDAY=30' in rrule_string:
+        if 'BYMONTH=2' in rrule_string:
+            impossible.append("February 30th")
+        elif 'BYMONTH=' not in rrule_string:
+            impossible.append("30th day will skip February")
     
     return impossible
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Development script to run the Personal Agent Orchestrator API locally.
+Development script to run the Ordinaut API locally.
 
 This script starts the FastAPI application with uvicorn in development mode
 with hot reloading and detailed logging.
@@ -31,7 +31,7 @@ def main():
     # Redis URL - use environment or default to local Redis
     os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
     
-    print("🚀 Starting Personal Agent Orchestrator API")
+    print("🚀 Starting Ordinaut API")
     print(f"   Environment: {os.environ.get('ENVIRONMENT')}")
     print(f"   Database: {os.environ.get('DATABASE_URL')}")
     print(f"   Redis: {os.environ.get('REDIS_URL')}")

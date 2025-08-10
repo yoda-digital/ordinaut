@@ -1,4 +1,4 @@
-# Prometheus configuration for Personal Agent Orchestrator
+# Prometheus configuration for Ordinaut
 # Scrapes metrics from all system components
 
 global:
@@ -26,7 +26,7 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  # Personal Agent Orchestrator API
+  # Ordinaut API
   - job_name: 'orchestrator-api'
     scrape_interval: 10s
     metrics_path: /metrics
@@ -106,10 +106,5 @@ scrape_configs:
       - source_labels: [__meta_consul_node]
         target_label: node
 
-# Storage configuration
-storage:
-  tsdb:
-    retention.time: 30d
-    retention.size: 10GB
-    path: /prometheus/data
-    wal-compression: true
+# Storage is configured via command line arguments
+# retention.time and retention.size are set in docker-compose.yml

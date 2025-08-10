@@ -1,4 +1,4 @@
-# Docker Compose for Personal Agent Orchestrator with full observability stack
+# Docker Compose for Ordinaut with full observability stack
 # Includes Prometheus, Grafana, Alert Manager, and log aggregation
 
 version: '3.8'
@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: orchestrator_pass
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./migrations/version_0001.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../migrations:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     healthcheck:
@@ -35,7 +35,7 @@ services:
   # Orchestrator API with observability
   api:
     build:
-      context: .
+      context: ..
       dockerfile: ops/Dockerfile.api
     ports:
       - "8080:8080"
@@ -62,7 +62,7 @@ services:
   # Scheduler service
   scheduler:
     build:
-      context: .
+      context: ..
       dockerfile: ops/Dockerfile.scheduler
     environment:
       DATABASE_URL: postgresql://orchestrator:orchestrator_pass@postgres:5432/orchestrator
@@ -76,7 +76,7 @@ services:
   # Worker processes (scaled)
   worker-1:
     build:
-      context: .
+      context: ..
       dockerfile: ops/Dockerfile.worker
     environment:
       DATABASE_URL: postgresql://orchestrator:orchestrator_pass@postgres:5432/orchestrator
@@ -90,7 +90,7 @@ services:
 
   worker-2:
     build:
-      context: .
+      context: ..
       dockerfile: ops/Dockerfile.worker
     environment:
       DATABASE_URL: postgresql://orchestrator:orchestrator_pass@postgres:5432/orchestrator
@@ -108,8 +108,8 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./ops/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -140,9 +140,9 @@ services:
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-piechart-panel
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./ops/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
-      - ./ops/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-      - ./ops/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - prometheus
     healthcheck:
@@ -157,7 +157,7 @@ services:
     ports:
       - "9093:9093"
     volumes:
-      - ./ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
       - alertmanager_data:/alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
@@ -209,7 +209,7 @@ services:
     ports:
       - "3100:3100"
     volumes:
-      - ./ops/loki/loki.yml:/etc/loki/local-config.yaml
+      - ./loki/loki.yml:/etc/loki/local-config.yaml
       - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
 
@@ -217,7 +217,7 @@ services:
   promtail:
     image: grafana/promtail:2.9.0
     volumes:
-      - ./ops/promtail/promtail.yml:/etc/promtail/config.yml
+      - ./promtail/promtail.yml:/etc/promtail/config.yml
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     command: -config.file=/etc/promtail/config.yml

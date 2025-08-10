@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive test suite for the Personal Agent Orchestrator Pipeline Execution Engine.
+Comprehensive test suite for the Ordinaut Pipeline Execution Engine.
 
 Tests the complete pipeline execution flow including:
 - Template rendering with ${steps.x.y} and ${params.z} syntax

@@ -1,8 +1,8 @@
-# Personal Agent Orchestrator - Payloads Directory
+# Ordinaut - Payloads Directory
 
 ## Purpose and Role
 
-The `payloads/` directory contains example payload files and pipeline definitions that demonstrate how to structure complex automation workflows within the Personal Agent Orchestrator. These files serve as templates, examples, and starting points for creating sophisticated agent-driven tasks.
+The `payloads/` directory contains example payload files and pipeline definitions that demonstrate how to structure complex automation workflows within the Ordinaut. These files serve as templates, examples, and starting points for creating sophisticated agent-driven tasks.
 
 ## Directory Contents
 

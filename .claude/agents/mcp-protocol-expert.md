@@ -221,7 +221,7 @@ async def get_capabilities() -> EmbeddedResource:
         type="capability_definition",
         uri="orchestrator://capabilities",
         name="Orchestrator Capabilities",
-        description="Complete capability definition for the Personal Agent Orchestrator",
+        description="Complete capability definition for the Ordinaut",
         mimeType="application/json",
         text=json.dumps(capabilities, indent=2)
     )

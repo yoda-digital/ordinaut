@@ -1,6 +1,6 @@
 # engine/registry.py
 """
-Tool Registry for Personal Agent Orchestrator
+Tool Registry for Ordinaut
 
 Manages tool catalog loading, caching, and access with support for
 multiple catalog sources (JSON files, environment, database).

@@ -1,4 +1,4 @@
-# Unit Tests - Personal Agent Orchestrator
+# Unit Tests - Ordinaut
 
 ## Purpose and Testing Scope
 
@@ -435,4 +435,4 @@ pytest tests/unit/ \
 - No test warnings or deprecation messages
 - All tests must be properly categorized with pytest marks
 
-This unit testing framework ensures comprehensive coverage of all Personal Agent Orchestrator components while maintaining fast execution and reliable results for continuous development feedback.
+This unit testing framework ensures comprehensive coverage of all Ordinaut components while maintaining fast execution and reliable results for continuous development feedback.

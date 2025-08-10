@@ -1,5 +1,5 @@
 """
-Personal Agent Orchestrator FastAPI Application.
+Ordinaut FastAPI Application.
 
 Main application that provides the complete REST API for task scheduling,
 execution monitoring, and event publishing. Includes automatic OpenAPI
@@ -23,6 +23,11 @@ from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from .dependencies import check_database_health, check_redis_health
 from .schemas import HealthResponse, ErrorResponse
 from .routes import tasks, runs, events, agents
+from .security import (
+    security_middleware, limiter, rate_limit_handler,
+    SecurityHeaders, security_config
+)
+from slowapi.errors import RateLimitExceeded
 
 # Import observability components
 from observability.metrics import orchestrator_metrics, get_metrics_handler
@@ -46,7 +51,7 @@ logger = api_logger
 async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
-    logger.info(f"Starting Personal Agent Orchestrator API v{VERSION}")
+    logger.info(f"Starting Ordinaut API v{VERSION}")
     logger.info(f"Environment: {ENVIRONMENT}")
     
     # Verify connections on startup
@@ -64,14 +69,14 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
-    logger.info("Shutting down Personal Agent Orchestrator API")
+    logger.info("Shutting down Ordinaut API")
 
 
 # Create FastAPI application
 app = FastAPI(
-    title="Personal Agent Orchestrator",
+    title="Ordinaut",
     description="""
-    A production-ready Personal Agent Orchestrator that provides AI agents with a shared backbone 
+    A production-ready Ordinaut that provides AI agents with a shared backbone 
     for time, state, and discipline.
 
     ## Features
@@ -121,13 +126,19 @@ app = FastAPI(
     ]
 )
 
-# Add middleware
+# Add security middleware stack (order matters!)
 if ENVIRONMENT == "production":
-    # Security middleware for production
+    # Trusted host middleware for production
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=["localhost", "127.0.0.1", "*.example.com"]
     )
+
+# Rate limiting middleware
+if limiter:
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
+    # Note: SlowAPIMiddleware is added automatically when limiter is used
 
 # CORS middleware
 app.add_middleware(
@@ -170,6 +181,13 @@ async def general_exception_handler(request: Request, exc: Exception):
             timestamp=datetime.now(timezone.utc)
         ).dict()
     )
+
+
+# Security middleware for request validation and threat protection
+@app.middleware("http")
+async def security_middleware_handler(request: Request, call_next):
+    """Security middleware for comprehensive request validation."""
+    return await security_middleware(request, call_next)
 
 
 # Request middleware for logging, metrics, and request IDs
@@ -350,20 +368,28 @@ def custom_openapi():
         tags=app.openapi_tags
     )
     
-    # Add security scheme for Agent authentication
+    # Add security schemes for authentication
     openapi_schema["components"]["securitySchemes"] = {
-        "AgentAuth": {
+        "AgentJWT": {
             "type": "http",
             "scheme": "bearer",
-            "description": "Agent ID as Bearer token (format: Bearer <agent-uuid>)"
+            "bearerFormat": "JWT",
+            "description": "JWT token for agent authentication (format: Bearer <jwt-token>)"
+        },
+        "AgentAuth": {
+            "type": "http",
+            "scheme": "bearer", 
+            "description": "Legacy agent ID authentication (format: Bearer <agent-uuid>)"
         }
     }
     
     # Add security requirement to all endpoints
     for path in openapi_schema["paths"]:
         for method in openapi_schema["paths"][path]:
-            if method != "get" or path not in ["/health", "/health/ready", "/health/live"]:
-                openapi_schema["paths"][path][method]["security"] = [{"AgentAuth": []}]
+            if method != "get" or path not in ["/health", "/health/ready", "/health/live", "/metrics"]:
+                openapi_schema["paths"][path][method]["security"] = [
+                    {"AgentJWT": []}, {"AgentAuth": []}
+                ]
     
     app.openapi_schema = openapi_schema
     return app.openapi_schema
@@ -377,7 +403,7 @@ app.openapi = custom_openapi
 async def root():
     """Root endpoint with basic service information."""
     return {
-        "service": "Personal Agent Orchestrator",
+        "service": "Ordinaut",
         "version": VERSION,
         "environment": ENVIRONMENT,
         "status": "running",

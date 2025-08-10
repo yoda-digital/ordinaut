@@ -1,8 +1,8 @@
-# Load Tests - Personal Agent Orchestrator
+# Load Tests - Ordinaut
 
 ## Purpose and Testing Scope
 
-Load tests validate system performance, scalability, and reliability under realistic production workloads. These tests ensure the Personal Agent Orchestrator meets performance SLAs and handles high-volume scenarios gracefully without degradation.
+Load tests validate system performance, scalability, and reliability under realistic production workloads. These tests ensure the Ordinaut meets performance SLAs and handles high-volume scenarios gracefully without degradation.
 
 **Core Testing Principles:**
 - **Production Realism**: Tests simulate actual agent usage patterns and loads
@@ -908,4 +908,4 @@ pytest tests/load/ -v -m load --validate-sla --sla-config=sla_requirements.json
 - No data corruption or loss under high load
 - Clear performance bottlenecks identified and documented
 
-This load testing framework ensures the Personal Agent Orchestrator can handle production workloads reliably and meet performance expectations under realistic usage scenarios.
+This load testing framework ensures the Ordinaut can handle production workloads reliably and meet performance expectations under realistic usage scenarios.

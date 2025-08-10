@@ -1,7 +1,7 @@
 {
   "dashboard": {
     "id": null,
-    "title": "Personal Agent Orchestrator - System Overview",
+    "title": "Ordinaut - System Overview",
     "tags": ["orchestrator", "overview"],
     "style": "dark",
     "timezone": "browser",

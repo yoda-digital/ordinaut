@@ -1,8 +1,8 @@
-# Personal Agent Orchestrator - FastAPI Application Layer
+# Ordinaut - FastAPI Application Layer
 
 ## Purpose & Mission
 
-The **FastAPI Application Layer** serves as the REST API gateway for the Personal Agent Orchestrator, providing AI agents with a comprehensive HTTP interface for task management, pipeline execution, and system monitoring. This layer transforms the orchestrator's core capabilities into accessible, well-documented API endpoints that agents can integrate with using standard HTTP protocols.
+The **FastAPI Application Layer** serves as the REST API gateway for the Ordinaut, providing AI agents with a comprehensive HTTP interface for task management, pipeline execution, and system monitoring. This layer transforms the orchestrator's core capabilities into accessible, well-documented API endpoints that agents can integrate with using standard HTTP protocols.
 
 **Core Responsibilities:**
 - **Task Lifecycle Management** - Create, read, update, delete, and control scheduled tasks
@@ -86,7 +86,7 @@ from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
 
 app = FastAPI(
-    title="Personal Agent Orchestrator API",
+    title="Ordinaut API",
     description="REST API for AI agent task scheduling and coordination",
     version="1.0.0",
     docs_url="/docs",
@@ -1545,7 +1545,7 @@ async def correlation_id_middleware(request: Request, call_next):
 
 ## Summary
 
-The FastAPI Application Layer serves as the primary interface for AI agents to interact with the Personal Agent Orchestrator. It provides:
+The FastAPI Application Layer serves as the primary interface for AI agents to interact with the Ordinaut. It provides:
 
 **Core Features:**
 - Complete REST API for task management and monitoring

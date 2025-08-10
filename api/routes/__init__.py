@@ -1,5 +1,5 @@
 """
-Routes module for the Personal Agent Orchestrator API.
+Routes module for the Ordinaut API.
 
 This module provides all API route definitions organized by functionality:
 - tasks: Task CRUD operations and execution control

@@ -1,8 +1,8 @@
-# Operations - Personal Agent Orchestrator Production Deployment
+# Operations - Ordinaut Production Deployment
 
 ## Purpose & Scope
 
-The `./ops/` directory contains all production deployment infrastructure for the Personal Agent Orchestrator. This includes Docker containerization, monitoring stack, health checks, configuration management, and deployment patterns for both development and production environments.
+The `./ops/` directory contains all production deployment infrastructure for the Ordinaut. This includes Docker containerization, monitoring stack, health checks, configuration management, and deployment patterns for both development and production environments.
 
 **Core Responsibilities:**
 - Multi-stage Docker builds optimized for production performance
@@ -477,7 +477,7 @@ alerting:
 ```json
 {
   "dashboard": {
-    "title": "Personal Agent Orchestrator - Overview",
+    "title": "Ordinaut - Overview",
     "panels": [
       {
         "title": "Task Execution Rate",
@@ -761,7 +761,7 @@ set -e
 ENVIRONMENT=${1:-production}
 COMPOSE_FILE="docker-compose.prod.yml"
 
-echo "Deploying Personal Agent Orchestrator to $ENVIRONMENT..."
+echo "Deploying Ordinaut to $ENVIRONMENT..."
 
 # Validate environment
 if [[ ! -f ".env.$ENVIRONMENT" ]]; then

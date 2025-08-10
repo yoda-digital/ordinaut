@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # workers/cli.py
 """
-Worker management CLI for Personal Agent Orchestrator.
+Worker management CLI for Ordinaut.
 Provides operational tools for monitoring and managing the distributed worker system.
 """
 
@@ -162,7 +162,7 @@ def cmd_monitor(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Worker management CLI for Personal Agent Orchestrator",
+        description="Worker management CLI for Ordinaut",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

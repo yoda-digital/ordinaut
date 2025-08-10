@@ -2,7 +2,7 @@
 
 ## Purpose and Architecture
 
-The Workers system is the **distributed job processing backbone** of the Personal Agent Orchestrator. It provides concurrent, fault-tolerant execution of scheduled tasks using PostgreSQL's `SKIP LOCKED` pattern for safe work distribution across multiple worker processes.
+The Workers system is the **distributed job processing backbone** of the Ordinaut. It provides concurrent, fault-tolerant execution of scheduled tasks using PostgreSQL's `SKIP LOCKED` pattern for safe work distribution across multiple worker processes.
 
 ### Core Responsibilities
 - **Concurrent Job Processing**: Multiple workers safely lease and process work items without conflicts
@@ -952,4 +952,4 @@ def test_database_connection_scaling():
 
 ---
 
-*The Workers system forms the operational backbone of the Personal Agent Orchestrator, providing reliable, scalable, and fault-tolerant execution of agent tasks. Its SKIP LOCKED-based architecture ensures safe concurrent processing while comprehensive monitoring and coordination features enable confident production operations.*
+*The Workers system forms the operational backbone of the Ordinaut, providing reliable, scalable, and fault-tolerant execution of agent tasks. Its SKIP LOCKED-based architecture ensures safe concurrent processing while comprehensive monitoring and coordination features enable confident production operations.*

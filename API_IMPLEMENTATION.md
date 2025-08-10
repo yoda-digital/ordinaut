@@ -1,8 +1,8 @@
-# Personal Agent Orchestrator - FastAPI Implementation
+# Ordinaut - FastAPI Implementation
 
 ## Overview
 
-The FastAPI application has been completely implemented according to the specifications in `plan.md` section 8 and section 2. This provides a production-ready REST API for the Personal Agent Orchestrator with comprehensive task management, execution monitoring, and event publishing capabilities.
+The FastAPI application has been completely implemented according to the specifications in `plan.md` section 8 and section 2. This provides a production-ready REST API for the Ordinaut with comprehensive task management, execution monitoring, and event publishing capabilities.
 
 ## Implementation Summary
 

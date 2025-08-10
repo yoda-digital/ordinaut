@@ -1,7 +1,7 @@
-# Scripts Directory - Personal Agent Orchestrator
+# Scripts Directory - Ordinaut
 
 ## Purpose
-The `scripts/` directory contains operational utilities and system management scripts for the Personal Agent Orchestrator. These scripts provide essential functionality for development, testing, validation, and operational maintenance of the system.
+The `scripts/` directory contains operational utilities and system management scripts for the Ordinaut. These scripts provide essential functionality for development, testing, validation, and operational maintenance of the system.
 
 ## Core Philosophy
 Scripts in this directory follow the "operational excellence" principle:
@@ -390,4 +390,4 @@ Scripts include automated recovery mechanisms:
 
 ---
 
-*These operational scripts ensure the Personal Agent Orchestrator maintains high reliability, performance, and operational excellence throughout its lifecycle. They provide comprehensive validation, testing, and maintenance capabilities essential for production deployment and ongoing operations.*
+*These operational scripts ensure the Ordinaut maintains high reliability, performance, and operational excellence throughout its lifecycle. They provide comprehensive validation, testing, and maintenance capabilities essential for production deployment and ongoing operations.*

@@ -854,4 +854,4 @@ engine = create_engine(
 - [ ] Audit logging enabled and monitored
 - [ ] Network access properly restricted
 
-This development guide provides the foundation for extending and contributing to the Personal Agent Orchestrator. Follow these patterns and guidelines to maintain system reliability, performance, and security.
+This development guide provides the foundation for extending and contributing to the Ordinaut. Follow these patterns and guidelines to maintain system reliability, performance, and security.

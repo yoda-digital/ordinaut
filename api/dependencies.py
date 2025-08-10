@@ -7,10 +7,12 @@ and Redis connections with proper cleanup and error handling.
 
 import os
 import redis
-from typing import Generator, Optional
+import asyncio
+from typing import Generator, Optional, AsyncGenerator
 from fastapi import Depends, HTTPException, Header, status
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 
 from .models import Agent
@@ -32,9 +34,11 @@ if DATABASE_URL.startswith("sqlite"):
         connect_args={"check_same_thread": False}  # Allow SQLite across threads
     )
 else:
-    # PostgreSQL settings
+    # PostgreSQL settings - use psycopg (not psycopg2) for PostgreSQL 16
+    # Replace postgresql:// with postgresql+psycopg:// for psycopg3 driver
+    postgres_url = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
     engine = create_engine(
-        DATABASE_URL,
+        postgres_url,
         pool_pre_ping=True,  # Verify connections before use
         pool_recycle=3600,   # Recycle connections every hour
         pool_size=20,        # Connection pool size
@@ -45,10 +49,45 @@ else:
 # Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Create async engine and session for health checks
+async_database_url = DATABASE_URL
+if DATABASE_URL.startswith("postgresql://"):
+    async_database_url = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+elif DATABASE_URL.startswith("postgresql+psycopg://"):
+    async_database_url = DATABASE_URL.replace("postgresql+psycopg://", "postgresql+asyncpg://")
+
+async_engine = None
+AsyncSessionLocal = None
+
+if not DATABASE_URL.startswith("sqlite"):
+    try:
+        async_engine = create_async_engine(
+            async_database_url,
+            pool_pre_ping=True,
+            pool_recycle=3600,
+            pool_size=10,
+            max_overflow=20,
+            future=True
+        )
+        AsyncSessionLocal = async_sessionmaker(
+            async_engine, 
+            class_=AsyncSession,
+            expire_on_commit=False
+        )
+        print(f"Async database engine initialized with URL: {async_database_url}")
+    except Exception as e:
+        print(f"Warning: Async database engine not available: {e}")
+        async_engine = None
+        AsyncSessionLocal = None
+
 # Redis client setup (optional for development)
 redis_client = None
+async_redis_client = None
 try:
     if REDIS_URL and REDIS_URL not in ("memory://", "disabled://"):
+        import redis.asyncio as aioredis
+        
+        # Sync Redis client for backwards compatibility
         redis_client = redis.from_url(
             REDIS_URL,
             decode_responses=False,  # Keep binary responses for stream IDs
@@ -57,9 +96,19 @@ try:
             retry_on_timeout=True,
             health_check_interval=30
         )
+        
+        # Async Redis client for health checks
+        async_redis_client = aioredis.from_url(
+            REDIS_URL,
+            decode_responses=True,
+            socket_connect_timeout=5,
+            socket_timeout=5,
+            retry_on_timeout=True
+        )
 except Exception as e:
     print(f"Warning: Redis not available: {e}")
     redis_client = None
+    async_redis_client = None
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -79,6 +128,80 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
+def get_database():
+    """
+    Async context manager that provides database sessions with automatic cleanup.
+    
+    Returns a context manager for health checks and other async operations.
+    """
+    if AsyncSessionLocal is None:
+        # Fallback context manager that handles sync sessions properly
+        class SyncSessionContextManager:
+            def __init__(self):
+                self.db = None
+                
+            async def __aenter__(self):
+                # Create sync session and wrap sync calls in executor
+                self.db = SessionLocal()
+                return SyncSessionWrapper(self.db)
+                
+            async def __aexit__(self, exc_type, exc_val, exc_tb):
+                if exc_type is not None:
+                    self.db.rollback()
+                self.db.close()
+        
+        class SyncSessionWrapper:
+            """Wrapper to make sync session methods async-compatible."""
+            def __init__(self, session):
+                self._session = session
+            
+            async def execute(self, statement, parameters=None):
+                """Execute statement asynchronously using thread executor."""
+                import asyncio
+                loop = asyncio.get_event_loop()
+                # Ensure we have text() wrapped statements
+                if isinstance(statement, str):
+                    from sqlalchemy import text
+                    statement = text(statement)
+                result = await loop.run_in_executor(None, 
+                    lambda: self._session.execute(statement, parameters or {}))
+                return AsyncResultWrapper(result)
+            
+            def __getattr__(self, name):
+                return getattr(self._session, name)
+                
+        class AsyncResultWrapper:
+            """Wrapper to make sync result methods async-compatible."""
+            def __init__(self, result):
+                self._result = result
+                
+            async def fetchone(self):
+                import asyncio
+                loop = asyncio.get_event_loop()
+                row = await loop.run_in_executor(None, self._result.fetchone)
+                return row
+                
+            async def fetchall(self):
+                import asyncio
+                loop = asyncio.get_event_loop()
+                rows = await loop.run_in_executor(None, self._result.fetchall)
+                return rows
+                
+            def fetchone_sync(self):
+                return self._result.fetchone()
+                
+            def fetchall_sync(self):
+                return self._result.fetchall()
+                
+            def __getattr__(self, name):
+                return getattr(self._result, name)
+        
+        return SyncSessionContextManager()
+    else:
+        # Return async connection context manager for raw SQL health checks
+        return async_engine.connect()
+
+
 def get_redis() -> redis.Redis:
     """
     Dependency that provides Redis client access.
@@ -89,37 +212,58 @@ def get_redis() -> redis.Redis:
     return redis_client
 
 
+async def get_redis_connection():
+    """
+    Async function that provides Redis client access for health checks.
+    
+    Returns the configured async Redis client.
+    """
+    return async_redis_client
+
+
 async def get_current_agent(
     authorization: str = Header(..., description="Bearer token for agent authentication"),
     db: Session = Depends(get_db)
 ) -> Agent:
     """
-    Dependency that extracts and validates the current agent from auth header.
+    DEPRECATED: Legacy agent authentication using direct agent IDs.
+    
+    This is maintained for backward compatibility during transition to JWT.
+    Use get_current_agent_jwt() from security.py for new implementations.
     
     Expects Authorization header in format: "Bearer <agent-id>"
     Returns the authenticated Agent model or raises 401/403 errors.
-    
-    For production, this should be replaced with proper JWT validation
-    or integration with an authentication service.
     """
     if not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format. Expected 'Bearer <agent-id>'",
+            detail="Invalid authorization header format. Expected 'Bearer <token>'",
             headers={"WWW-Authenticate": "Bearer"}
         )
     
     try:
-        # Extract agent ID from Bearer token
-        # In production, this would validate a JWT token instead
-        agent_id = authorization[7:]  # Remove "Bearer " prefix
+        # Extract token from Bearer header
+        token = authorization[7:]  # Remove "Bearer " prefix
         
-        # Look up agent
-        agent = db.query(Agent).filter(Agent.id == agent_id).first()
+        # Try JWT authentication first
+        try:
+            from .auth import jwt_manager
+            token_data = jwt_manager.verify_token(token, token_type="access")
+            agent = db.query(Agent).filter(Agent.id == token_data.agent_id).first()
+            
+            if agent:
+                return agent
+                
+        except Exception:
+            # Fall back to legacy agent ID authentication
+            pass
+        
+        # Legacy fallback: treat token as direct agent ID
+        agent = db.query(Agent).filter(Agent.id == token).first()
         if not agent:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Agent {agent_id} not found or invalid",
+                detail=f"Agent not found or invalid token",
                 headers={"WWW-Authenticate": "Bearer"}
             )
         
@@ -128,7 +272,7 @@ async def get_current_agent(
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid agent ID format: {str(e)}",
+            detail=f"Invalid token format: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"}
         )
     except SQLAlchemyError as e:

@@ -1,7 +1,7 @@
 """
-Personal Agent Orchestrator FastAPI Application.
+Ordinaut FastAPI Application.
 
-This package provides the complete REST API for the Personal Agent Orchestrator,
+This package provides the complete REST API for the Ordinaut,
 including task management, execution monitoring, event publishing, and agent authentication.
 
 Main components:

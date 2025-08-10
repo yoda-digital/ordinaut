@@ -1,4 +1,4 @@
-# Alertmanager configuration for Personal Agent Orchestrator
+# Alertmanager configuration for Ordinaut
 # Routes alerts to appropriate notification channels based on severity
 
 global:
@@ -72,36 +72,11 @@ receivers:
   - name: 'default-receiver'
     email_configs:
       - to: 'orchestrator-team@example.com'
-        subject: '[Orchestrator] {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
-        body: |
-          {{ range .Alerts }}
-          **Alert:** {{ .Annotations.summary }}
-          **Description:** {{ .Annotations.description }}
-          **Severity:** {{ .Labels.severity }}
-          **Service:** {{ .Labels.service }}
-          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
-          {{ if .Annotations.runbook_url }}**Runbook:** {{ .Annotations.runbook_url }}{{ end }}
-          
-          **Labels:** {{ range .Labels.SortedPairs }}{{ .Name }}={{ .Value }} {{ end }}
-          {{ end }}
 
   # Critical alerts - multiple channels
   - name: 'critical-alerts'
     email_configs:
       - to: 'orchestrator-oncall@example.com'
-        subject: '[CRITICAL] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
-        body: |
-          🚨 **CRITICAL ORCHESTRATOR ALERT** 🚨
-          
-          {{ range .Alerts }}
-          **Alert:** {{ .Annotations.summary }}
-          **Description:** {{ .Annotations.description }}
-          **Service:** {{ .Labels.service }}
-          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
-          **Runbook:** {{ .Annotations.runbook_url }}
-          
-          **Action Required:** Immediate investigation and remediation needed.
-          {{ end }}
           
     slack_configs:
       - channel: '#orchestrator-critical'
@@ -131,16 +106,6 @@ receivers:
   - name: 'database-team'
     email_configs:
       - to: 'database-team@example.com'
-        subject: '[Database] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
-        body: |
-          **Database Alert from Personal Agent Orchestrator**
-          
-          {{ range .Alerts }}
-          **Alert:** {{ .Annotations.summary }}
-          **Description:** {{ .Annotations.description }}
-          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
-          {{ if .Annotations.runbook_url }}**Runbook:** {{ .Annotations.runbook_url }}{{ end }}
-          {{ end }}
           
     slack_configs:
       - channel: '#database-alerts'
@@ -152,18 +117,6 @@ receivers:
   - name: 'security-team'
     email_configs:
       - to: 'security-team@example.com'
-        subject: '[SECURITY] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
-        body: |
-          🛡️ **Security Alert from Personal Agent Orchestrator** 🛡️
-          
-          {{ range .Alerts }}
-          **Alert:** {{ .Annotations.summary }}
-          **Description:** {{ .Annotations.description }}
-          **Started:** {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
-          {{ if .Annotations.runbook_url }}**Runbook:** {{ .Annotations.runbook_url }}{{ end }}
-          
-          **Please investigate immediately for potential security implications.**
-          {{ end }}
           
     slack_configs:
       - channel: '#security-alerts'
@@ -175,7 +128,6 @@ receivers:
   - name: 'development-team'
     email_configs:
       - to: 'dev-team@example.com'
-        subject: '[Development] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
         
     slack_configs:
       - channel: '#orchestrator-dev'
@@ -196,7 +148,6 @@ receivers:
   - name: 'operations-team'
     email_configs:
       - to: 'ops-team@example.com'
-        subject: '[Operations] Orchestrator Alert: {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
         
     slack_configs:
       - channel: '#orchestrator-ops'

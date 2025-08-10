@@ -1,5 +1,5 @@
 """
-Personal Agent Orchestrator Engine Module
+Ordinaut Engine Module
 
 This module provides the core execution engine, including:
 - Pipeline execution with template rendering

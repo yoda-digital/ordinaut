@@ -1,4 +1,4 @@
-# Alert rules for Personal Agent Orchestrator
+# Alert rules for Ordinaut
 # Monitors system health and performance for >99.9% uptime requirement
 
 groups:

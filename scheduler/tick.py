@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Personal Agent Orchestrator - APScheduler Service
+Ordinaut - APScheduler Service
 Scheduler that reads task definitions and creates due_work rows for worker processing.
 
 This is the temporal brain of the orchestrator:
@@ -49,7 +49,7 @@ structured_logger = scheduler_logger
 DEFAULT_TIMEZONE = os.environ.get("TZ", "Europe/Chisinau")
 
 class SchedulerService:
-    """APScheduler service for Personal Agent Orchestrator."""
+    """APScheduler service for Ordinaut."""
     
     def __init__(self, database_url: str, timezone: str = DEFAULT_TIMEZONE):
         """Initialize scheduler service.
@@ -473,7 +473,7 @@ class SchedulerService:
     def run(self):
         """Run the scheduler service."""
         try:
-            logger.info("Starting Personal Agent Orchestrator Scheduler")
+            logger.info("Starting Ordinaut Scheduler")
             
             # Load and schedule existing tasks
             self.load_and_schedule_tasks()

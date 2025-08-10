@@ -1,8 +1,8 @@
-# Personal Agent Orchestrator API Routes
+# Ordinaut API Routes
 
 ## Purpose and Architecture
 
-The `/api/routes/` directory contains the **FastAPI route implementations** for the Personal Agent Orchestrator REST API. This directory organizes API endpoints by functional domain, providing a clean separation of concerns and maintainable code structure.
+The `/api/routes/` directory contains the **FastAPI route implementations** for the Ordinaut REST API. This directory organizes API endpoints by functional domain, providing a clean separation of concerns and maintainable code structure.
 
 ### Core Design Principles
 
@@ -747,4 +747,4 @@ async def create_task(...):
 - Performance profiling and bottleneck identification
 - Automated alerting for operational issues
 
-The Personal Agent Orchestrator API routes provide a robust, secure, and maintainable foundation for agent coordination and task management. Each route module follows consistent patterns while addressing the specific requirements of its functional domain.
+The Ordinaut API routes provide a robust, secure, and maintainable foundation for agent coordination and task management. Each route module follows consistent patterns while addressing the specific requirements of its functional domain.

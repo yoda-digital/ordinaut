@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "description": "Personal Agent Orchestrator Tool Catalog",
+  "description": "Ordinaut Tool Catalog",
   "tools": [
     {
       "address": "telegram-mcp.send_message",

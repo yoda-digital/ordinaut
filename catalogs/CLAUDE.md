@@ -1,8 +1,8 @@
-# Personal Agent Orchestrator - Tool Catalogs Directory
+# Ordinaut - Tool Catalogs Directory
 
 ## Purpose and Role
 
-The `catalogs/` directory contains tool catalog definitions that describe all available tools and services that can be used in pipeline executions. These catalogs serve as the authoritative registry for tool discovery, validation, and integration within the Personal Agent Orchestrator ecosystem.
+The `catalogs/` directory contains tool catalog definitions that describe all available tools and services that can be used in pipeline executions. These catalogs serve as the authoritative registry for tool discovery, validation, and integration within the Ordinaut ecosystem.
 
 ## Directory Contents
 
@@ -19,7 +19,7 @@ The `catalogs/` directory contains tool catalog definitions that describe all av
 ```json
 {
   "version": "1.0",
-  "description": "Personal Agent Orchestrator Tool Catalog",
+  "description": "Ordinaut Tool Catalog",
   "last_updated": "2025-08-08T00:00:00Z",
   "tools": [
     // Array of tool definitions
@@ -417,4 +417,4 @@ def debug_tool_catalog(catalog_path: str):
 
 ---
 
-*The catalogs directory serves as the comprehensive registry of all available tools, ensuring type safety, proper authorization, and seamless integration across the Personal Agent Orchestrator ecosystem.*
+*The catalogs directory serves as the comprehensive registry of all available tools, ensuring type safety, proper authorization, and seamless integration across the Ordinaut ecosystem.*

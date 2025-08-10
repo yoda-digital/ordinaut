@@ -1,8 +1,8 @@
-# Personal Agent Orchestrator - Docker Infrastructure
+# Ordinaut - Docker Infrastructure
 
 ## 🚀 Complete Docker Containerization
 
-This directory contains the complete Docker infrastructure for the Personal Agent Orchestrator, implementing all requirements from `plan.md` section 3.
+This directory contains the complete Docker infrastructure for the Ordinaut, implementing all requirements from `plan.md` section 3.
 
 ## 📁 Files Created
 
@@ -230,4 +230,4 @@ make db-restore FILE=backup.sql
 6. **Observable**: Health checks, logging, metrics, status monitoring
 7. **Secure**: Non-root execution, network isolation, minimal attack surface
 
-The Personal Agent Orchestrator can now be deployed with a single `docker compose up` command, providing a complete, production-ready AI agent coordination platform with bulletproof scheduling, reliable execution, and comprehensive observability.
+The Ordinaut can now be deployed with a single `docker compose up` command, providing a complete, production-ready AI agent coordination platform with bulletproof scheduling, reliable execution, and comprehensive observability.

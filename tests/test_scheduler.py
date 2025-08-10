@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test suite for the Personal Agent Orchestrator Scheduler Service.
+Test suite for the Ordinaut Scheduler Service.
 
 Tests the APScheduler integration, timezone handling, RRULE processing,
 and due_work table creation functionality.

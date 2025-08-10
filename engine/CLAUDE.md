@@ -1,8 +1,8 @@
-# Personal Agent Orchestrator - Engine Runtime
+# Ordinaut - Engine Runtime
 
 ## Purpose
 
-The **Engine Runtime** is the deterministic pipeline execution heart of the Personal Agent Orchestrator. It transforms declarative pipeline definitions into reliable, observable, and fault-tolerant task execution with comprehensive template rendering, JSON schema validation, and MCP tool integration.
+The **Engine Runtime** is the deterministic pipeline execution heart of the Ordinaut. It transforms declarative pipeline definitions into reliable, observable, and fault-tolerant task execution with comprehensive template rendering, JSON schema validation, and MCP tool integration.
 
 ---
 

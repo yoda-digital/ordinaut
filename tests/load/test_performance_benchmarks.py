@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Performance and load testing for Personal Agent Orchestrator.
+Performance and load testing for Ordinaut.
 
 Tests system performance under various load conditions including:
 - 1000+ concurrent task processing with SKIP LOCKED verification

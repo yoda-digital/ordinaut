@@ -2,7 +2,7 @@
 Pydantic schemas for API request/response models.
 
 These schemas provide input validation, serialization, and automatic OpenAPI
-documentation generation for the Personal Agent Orchestrator API.
+documentation generation for the Ordinaut API.
 """
 
 from datetime import datetime

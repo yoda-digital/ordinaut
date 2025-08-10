@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local development startup script for Personal Agent Orchestrator.
+Local development startup script for Ordinaut.
 Alternative to Docker Compose when containers aren't available.
 """
 import os
@@ -33,7 +33,7 @@ def setup_sqlite_database():
     
     # Simplified schema for SQLite (remove PostgreSQL-specific features)
     sqlite_schema = """
-    -- Core tables for Personal Agent Orchestrator (SQLite version)
+    -- Core tables for Ordinaut (SQLite version)
     
     CREATE TABLE IF NOT EXISTS agent (
         id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
@@ -228,7 +228,7 @@ def cleanup(processes):
 
 def main():
     """Main startup orchestration"""
-    print("🎯 Personal Agent Orchestrator - Local Development Mode")
+    print("🎯 Ordinaut - Local Development Mode")
     print("=" * 60)
     
     # Set up database
@@ -261,7 +261,7 @@ def main():
         # Test system
         if test_system():
             print("✅ System integration successful!")
-            print("\n🎉 Personal Agent Orchestrator is running!")
+            print("\n🎉 Ordinaut is running!")
             print("📊 API: http://localhost:8080")
             print("📋 Health: http://localhost:8080/health")
             print("📚 Docs: http://localhost:8080/docs")
@@ -282,7 +282,7 @@ def main():
     finally:
         cleanup(processes)
     
-    print("👋 Personal Agent Orchestrator stopped")
+    print("👋 Ordinaut stopped")
     return 0
 
 if __name__ == "__main__":

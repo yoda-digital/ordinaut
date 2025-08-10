@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Validation script for the Personal Agent Orchestrator Scheduler.
+Validation script for the Ordinaut Scheduler.
 
 This script validates that the scheduler service can be imported and initialized
 without runtime errors, and demonstrates the key functionality.
@@ -183,7 +183,7 @@ def validate_task_scheduling_logic():
 
 def main():
     """Run all validation checks."""
-    print("Personal Agent Orchestrator Scheduler Validation")
+    print("Ordinaut Scheduler Validation")
     print("=" * 50)
     
     checks = [

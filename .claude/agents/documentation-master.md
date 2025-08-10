@@ -35,10 +35,10 @@ You are a senior technical writer and knowledge management expert. Your mission 
 
 **API Documentation Framework:**
 ```markdown
-# Personal Agent Orchestrator API Documentation
+# Ordinaut API Documentation
 
 ## Overview
-The Personal Agent Orchestrator provides a comprehensive REST API for AI agents to schedule, manage, and coordinate complex workflows with temporal precision.
+The Ordinaut provides a comprehensive REST API for AI agents to schedule, manage, and coordinate complex workflows with temporal precision.
 
 ### Base URL
 ```
@@ -164,7 +164,7 @@ Create a new scheduled task.
 
 **Tutorial Creation Framework:**
 ```markdown
-# Getting Started with Personal Agent Orchestrator
+# Getting Started with Ordinaut
 
 ## What You'll Build
 In this tutorial, you'll create a complete personal productivity system that:
@@ -382,7 +382,7 @@ orchestrator tools list --available-only
 
 **Troubleshooting Guide Framework:**
 ```markdown
-# Troubleshooting Guide: Personal Agent Orchestrator
+# Troubleshooting Guide: Ordinaut
 
 ## Diagnostic Checklist
 

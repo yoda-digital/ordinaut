@@ -45,7 +45,7 @@ cd ops/
 open http://localhost:8080/docs
 ```
 
-**That's it!** Your Personal Agent Orchestrator is now running with:
+**That's it!** Your Ordinaut is now running with:
 - 📡 **REST API** at `http://localhost:8080`
 - 📊 **Health Dashboard** at `http://localhost:8080/health`
 - 📚 **Interactive Docs** at `http://localhost:8080/docs`

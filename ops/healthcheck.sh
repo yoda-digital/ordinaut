@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Personal Agent Orchestrator - Health Check Script
+# Ordinaut - Health Check Script
 # Can be used by external monitoring systems or load balancers
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -101,7 +101,7 @@ main() {
         exit 1
     }
     
-    echo "🏥 Personal Agent Orchestrator - Health Check"
+    echo "🏥 Ordinaut - Health Check"
     echo "============================================"
     
     # Basic service checks
@@ -153,7 +153,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --help|-h)
             cat << EOF
-Health Check Script for Personal Agent Orchestrator
+Health Check Script for Ordinaut
 
 Usage: $0 [OPTIONS]
 

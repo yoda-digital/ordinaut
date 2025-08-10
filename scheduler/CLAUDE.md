@@ -1,8 +1,8 @@
-# Scheduler Service - Personal Agent Orchestrator
+# Scheduler Service - Ordinaut
 
 ## Mission Statement
 
-The **Scheduler Service** is the temporal brain of the Personal Agent Orchestrator, providing bulletproof task scheduling with PostgreSQL persistence, RRULE processing, and timezone-aware execution. It transforms time-based intentions into reliable work items that workers can process safely and concurrently.
+The **Scheduler Service** is the temporal brain of the Ordinaut, providing bulletproof task scheduling with PostgreSQL persistence, RRULE processing, and timezone-aware execution. It transforms time-based intentions into reliable work items that workers can process safely and concurrently.
 
 ## Core Architecture
 

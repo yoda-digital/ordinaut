@@ -42,7 +42,7 @@ import functools
 from typing import Dict, Any
 
 class OrchestrationMetrics:
-    """Comprehensive metrics for Personal Agent Orchestrator."""
+    """Comprehensive metrics for Ordinaut."""
     
     def __init__(self, registry: CollectorRegistry = None):
         self.registry = registry or CollectorRegistry()

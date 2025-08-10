@@ -1,6 +1,6 @@
 # engine/mcp_client.py
 """
-MCP Bridge for Personal Agent Orchestrator
+MCP Bridge for Ordinaut
 
 Implements both HTTP and stdio transports for calling MCP tools.
 Handles JSON Schema validation, error handling, timeout, and performance monitoring.

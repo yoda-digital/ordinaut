@@ -1,5 +1,5 @@
 """
-Observability package for Personal Agent Orchestrator.
+Observability package for Ordinaut.
 
 Provides comprehensive monitoring, logging, and alerting capabilities
 including Prometheus metrics, structured JSON logging, health checks,

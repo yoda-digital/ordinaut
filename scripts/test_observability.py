@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for Personal Agent Orchestrator observability stack.
+Test script for Ordinaut observability stack.
 
 Tests metrics collection, structured logging, health checks, and Prometheus integration.
 This script validates that all observability components are working correctly.
@@ -238,7 +238,7 @@ def generate_test_report():
 
 async def main():
     """Main test execution."""
-    print("🚀 Starting Personal Agent Orchestrator observability tests...\n")
+    print("🚀 Starting Ordinaut observability tests...\n")
     
     # Run synchronous tests
     report = generate_test_report()

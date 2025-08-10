@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive end-to-end integration tests for Personal Agent Orchestrator.
+Comprehensive end-to-end integration tests for Ordinaut.
 
 Tests complete workflows from task creation to execution including:
 - Full task lifecycle: creation → scheduling → execution → completion

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simplified system startup script for Personal Agent Orchestrator.
+Simplified system startup script for Ordinaut.
 Starts individual components with proper error handling.
 """
 import os
@@ -17,7 +17,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-print(f"🎯 Personal Agent Orchestrator - System Integration")
+print(f"🎯 Ordinaut - System Integration")
 print(f"📁 Project Root: {project_root}")
 print("=" * 60)
 
@@ -224,7 +224,7 @@ def main():
             task_id = create_sample_task()
             
             print()
-            print("🎉 Personal Agent Orchestrator Integration Complete!")
+            print("🎉 Ordinaut Integration Complete!")
             print("=" * 60)
             print("🌐 API Server: http://localhost:8080")
             print("📚 API Documentation: http://localhost:8080/docs")
@@ -267,7 +267,7 @@ def main():
                 except subprocess.TimeoutExpired:
                     proc.kill()
         
-        print("👋 Personal Agent Orchestrator stopped")
+        print("👋 Ordinaut stopped")
     
     return 0
 

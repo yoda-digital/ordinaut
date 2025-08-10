@@ -1,8 +1,8 @@
-# Observability Stack - Personal Agent Orchestrator
+# Observability Stack - Ordinaut
 
 ## Purpose & Mission
 
-The observability stack provides comprehensive monitoring, metrics collection, structured logging, and intelligent alerting for the Personal Agent Orchestrator. This system ensures production reliability, performance visibility, and rapid incident response through a complete observability solution.
+The observability stack provides comprehensive monitoring, metrics collection, structured logging, and intelligent alerting for the Ordinaut. This system ensures production reliability, performance visibility, and rapid incident response through a complete observability solution.
 
 **Core Objectives:**
 - **Real-time Monitoring**: Track system health, performance metrics, and business KPIs
@@ -597,7 +597,7 @@ alerting:
 ```json
 {
   "dashboard": {
-    "title": "Personal Agent Orchestrator",
+    "title": "Ordinaut",
     "panels": [
       {
         "title": "Task Execution Rate",
@@ -1203,7 +1203,7 @@ WHERE NOT blocked_locks.granted;
 
 ## Summary
 
-The observability stack provides comprehensive monitoring, alerting, and debugging capabilities for the Personal Agent Orchestrator. Key components work together to ensure:
+The observability stack provides comprehensive monitoring, alerting, and debugging capabilities for the Ordinaut. Key components work together to ensure:
 
 **Production Reliability:**
 - Real-time system health monitoring
@@ -1223,4 +1223,4 @@ The observability stack provides comprehensive monitoring, alerting, and debuggi
 - Security event tracking and compliance
 - Scalable monitoring infrastructure
 
-This observability foundation enables confident production deployment and efficient operation of the Personal Agent Orchestrator system.
+This observability foundation enables confident production deployment and efficient operation of the Ordinaut system.

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Personal Agent Orchestrator - Docker Startup Script
+# Ordinaut - Docker Startup Script
 # Usage: ./start.sh [dev|prod|--help]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,7 +9,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 show_help() {
     cat << EOF
-Personal Agent Orchestrator - Docker Startup Script
+Ordinaut - Docker Startup Script
 
 Usage: $0 [ENVIRONMENT] [OPTIONS]
 
@@ -97,7 +97,7 @@ start_services() {
     
     cd "$SCRIPT_DIR"
     
-    echo "🚀 Starting Personal Agent Orchestrator in $env mode..."
+    echo "🚀 Starting Ordinaut in $env mode..."
     
     local compose_cmd="docker compose -f docker-compose.yml"
     local build_args=""
@@ -128,7 +128,7 @@ start_services() {
     $compose_cmd ps
     
     echo ""
-    echo "✅ Personal Agent Orchestrator is running!"
+    echo "✅ Ordinaut is running!"
     echo ""
     echo "📋 Service URLs:"
     echo "   API:        http://localhost:8080"
@@ -185,7 +185,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Main execution
-echo "🏗️  Personal Agent Orchestrator - Docker Startup"
+echo "🏗️  Ordinaut - Docker Startup"
 echo "============================================="
 
 check_requirements

@@ -1,5 +1,5 @@
 """
-Alert rule definitions and management for Personal Agent Orchestrator.
+Alert rule definitions and management for Ordinaut.
 
 Implements alerting rules from plan.md section 11 requirements:
 - task_run.success=false ratio > 0.2 over 10 minutes

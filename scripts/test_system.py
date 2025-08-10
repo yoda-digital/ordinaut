@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quick system integration test for Personal Agent Orchestrator.
+Quick system integration test for Ordinaut.
 Tests API endpoints and basic functionality.
 """
 import os
@@ -111,7 +111,7 @@ def cleanup(processes):
 
 def main():
     """Main test flow"""
-    print("🎯 Personal Agent Orchestrator - System Integration Test")
+    print("🎯 Ordinaut - System Integration Test")
     print("=" * 60)
     
     setup_environment()
@@ -147,7 +147,7 @@ def main():
         if tests_passed == total_tests:
             print("🎉 All integration tests PASSED!")
             print()
-            print("✅ Personal Agent Orchestrator is operational")
+            print("✅ Ordinaut is operational")
             print("🌐 API accessible at: http://127.0.0.1:8080")
             print("📚 API docs at: http://127.0.0.1:8080/docs")
             return 0

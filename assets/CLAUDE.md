@@ -1,8 +1,8 @@
-# Personal Agent Orchestrator - Assets Directory
+# Ordinaut - Assets Directory
 
 ## Purpose and Role
 
-The `assets/` directory contains visual and static assets for the Personal Agent Orchestrator project, including logos, icons, diagrams, and other multimedia resources used in documentation, user interfaces, and branding.
+The `assets/` directory contains visual and static assets for the Ordinaut project, including logos, icons, diagrams, and other multimedia resources used in documentation, user interfaces, and branding.
 
 ## Directory Contents
 
@@ -96,18 +96,18 @@ assets/ui/
 # Example usage in documentation
 ![System Architecture](../assets/docs/architecture/system_overview.svg)
 
-<img src="../assets/branding/logos/ordinaut_logo.png" alt="Personal Agent Orchestrator" width="200">
+<img src="../assets/branding/logos/ordinaut_logo.png" alt="Ordinaut" width="200">
 ```
 
 ### API Documentation
 ```yaml
 # OpenAPI specification with assets
 info:
-  title: Personal Agent Orchestrator API
+  title: Ordinaut API
   description: |
     ![API Architecture](./assets/docs/api/architecture.svg)
     
-    The Personal Agent Orchestrator provides...
+    The Ordinaut provides...
   x-logo:
     url: './assets/branding/logos/ordinaut_logo.png'
     altText: 'Ordinaut Logo'
@@ -219,4 +219,4 @@ jobs:
 
 ---
 
-*The assets directory serves as the visual foundation for the Personal Agent Orchestrator project, ensuring consistent branding and clear communication through carefully crafted visual elements.*
+*The assets directory serves as the visual foundation for the Ordinaut project, ensuring consistent branding and clear communication through carefully crafted visual elements.*

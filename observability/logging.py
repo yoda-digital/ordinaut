@@ -1,5 +1,5 @@
 """
-Structured JSON logging system for Personal Agent Orchestrator.
+Structured JSON logging system for Ordinaut.
 
 Provides correlation IDs, request tracing, and performance metrics
 embedded in logs according to plan.md section 11 requirements.

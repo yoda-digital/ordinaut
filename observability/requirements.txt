@@ -1,4 +1,4 @@
-# Observability system dependencies for Personal Agent Orchestrator
+# Observability system dependencies for Ordinaut
 
 # Prometheus metrics collection
 prometheus_client>=0.17.0
