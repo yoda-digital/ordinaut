@@ -7,8 +7,8 @@ edit_uri: "edit/main/docs/"
 theme:
   name: material
   language: en
-  logo: assets/ordinary_logo_square.png
-  favicon: assets/ordinary_logo_square.png
+  logo: https://raw.githubusercontent.com/yoda-digital/ordinaut/main/docs/assets/ordinary_logo_square.png
+  favicon: https://raw.githubusercontent.com/yoda-digital/ordinaut/main/docs/assets/ordinary_logo_square.png
   features:
     - navigation.tabs
     - navigation.top
