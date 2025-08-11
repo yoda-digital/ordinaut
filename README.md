@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/ordinaut_logo.png">
     <source media="(prefers-color-scheme: light)" srcset="assets/ordinaut_logo.png">
-    <img alt="Ordinaut Logo" src="assets/ordinaut_logo.png" width="200" height="auto">
+    <img alt="Ordinaut Logo" src="https://raw.githubusercontent.com/yoda-digital/ordinaut/main/docs/assets/ordinaut_logo.png" width="200" height="auto">
   </picture>
   
   <p>
