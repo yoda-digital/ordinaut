@@ -74,7 +74,7 @@ jobs:
           echo "🧪 Testing release configuration without making changes"
           semantic-release --noop version --print
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏗️ Build Package
         run: |
@@ -99,7 +99,7 @@ jobs:
           semantic-release version
           semantic-release publish
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🎯 Manual Release
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.version != ''
@@ -108,7 +108,7 @@ jobs:
           semantic-release version --${{ github.event.inputs.version }}
           semantic-release publish
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📈 Upload Release Artifacts
         if: success()
