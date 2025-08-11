@@ -1,28 +1,28 @@
 <div align="center">
   <a href="https://github.com/yoda-digital/ordinaut" target="_blank" rel="noopener">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="../assets/ordinaut_logo.png">
-      <source media="(prefers-color-scheme: light)" srcset="../assets/ordinaut_logo.png">
+      <source media="(prefers-color-scheme: dark)" srcset="assets/ordinaut_logo.png">
+      <source media="(prefers-color-scheme: light)" srcset="assets/ordinaut_logo.png">
       <img alt="Ordinaut Logo" src="assets/ordinaut_logo.png" width="200" height="auto">
     </picture>
   </a>
 </div>
 
-# Welcome to Ordinaut
+# Добро пожаловать в Ordinaut
 
-**Lightweight, event-driven orchestrator for AI agents and pipelines with RRULE scheduling, persistent state, retries, and full observability.**
+**Легковесный, управляемый событиями оркестратор для AI-агентов и конвейеров с планированием по RRULE, постоянным состоянием, повторными попытками и полной наблюдаемостью.**
 
-Ordinaut provides the backbone for your AI agents, transforming disconnected assistants into a coordinated, reliable, and observable system.
+Ordinaut предоставляет основу для ваших AI-агентов, превращая разрозненных помощников в скоординированную, надежную и наблюдаемую систему.
 
-## Get Started
+## Начало Работы
 
-- **[Overview](getting-started/overview.md):** Understand the core concepts behind Ordinaut.
-- **[Installation](getting-started/installation.md):** Set up the Ordinaut system.
-- **[Quick Start](getting-started/quick-start.md):** Create your first automated workflow.
+- **[Обзор](getting-started/overview.md):** Поймите основные концепции, лежащие в основе Ordinaut.
+- **[Установка](getting-started/installation.md):** Настройте систему Ordinaut.
+- **[Краткое руководство](getting-started/quick-start.md):** Создайте свой первый автоматизированный рабочий процесс.
 
-## Key Features
+## Ключевые Особенности
 
-- **Advanced Scheduling:** Full RRULE and cron support for complex, timezone-aware scheduling.
-- **Reliable Execution:** Guarantees zero work loss with persistent state and robust retry mechanisms.
-- **Declarative Pipelines:** Define complex workflows with a simple, powerful syntax.
-- **Full Observability:** Production-grade monitoring, logging, and health checks.
+- **Расширенное Планирование:** Полная поддержка RRULE и cron для сложных, учитывающих часовые пояса, расписаний.
+- **Надежное Выполнение:** Гарантирует отсутствие потерь работы благодаря постоянному состоянию и надежным механизмам повторных попыток.
+- **Декларативные Конвейеры:** Определяйте сложные рабочие процессы с помощью простого и мощного синтаксиса.
+- **Полная Наблюдаемость:** Мониторинг, логирование и проверки состояния производственного уровня.

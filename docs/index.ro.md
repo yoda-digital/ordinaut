@@ -1,28 +1,28 @@
 <div align="center">
   <a href="https://github.com/yoda-digital/ordinaut" target="_blank" rel="noopener">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="../assets/ordinaut_logo.png">
-      <source media="(prefers-color-scheme: light)" srcset="../assets/ordinaut_logo.png">
+      <source media="(prefers-color-scheme: dark)" srcset="assets/ordinaut_logo.png">
+      <source media="(prefers-color-scheme: light)" srcset="assets/ordinaut_logo.png">
       <img alt="Ordinaut Logo" src="assets/ordinaut_logo.png" width="200" height="auto">
     </picture>
   </a>
 </div>
 
-# Welcome to Ordinaut
+# Bun venit la Ordinaut
 
-**Lightweight, event-driven orchestrator for AI agents and pipelines with RRULE scheduling, persistent state, retries, and full observability.**
+**Orchestrator ușor, bazat pe evenimente, pentru agenți și pipeline-uri AI cu programare RRULE, stare persistentă, reîncercări și observabilitate completă.**
 
-Ordinaut provides the backbone for your AI agents, transforming disconnected assistants into a coordinated, reliable, and observable system.
+Ordinaut oferă coloana vertebrală pentru agenții dumneavoastră AI, transformând asistenții deconectați într-un sistem coordonat, fiabil și observabil.
 
-## Get Started
+## Noțiuni de Bază
 
-- **[Overview](getting-started/overview.md):** Understand the core concepts behind Ordinaut.
-- **[Installation](getting-started/installation.md):** Set up the Ordinaut system.
-- **[Quick Start](getting-started/quick-start.md):** Create your first automated workflow.
+- **[Prezentare Generală](getting-started/overview.md):** Înțelegeți conceptele de bază din spatele Ordinaut.
+- **[Instalare](getting-started/installation.md):** Configurați sistemul Ordinaut.
+- **[Ghid de Pornire Rapidă](getting-started/quick-start.md):** Creați primul dumneavoastră flux de lucru automatizat.
 
-## Key Features
+## Caracteristici Cheie
 
-- **Advanced Scheduling:** Full RRULE and cron support for complex, timezone-aware scheduling.
-- **Reliable Execution:** Guarantees zero work loss with persistent state and robust retry mechanisms.
-- **Declarative Pipelines:** Define complex workflows with a simple, powerful syntax.
-- **Full Observability:** Production-grade monitoring, logging, and health checks.
+- **Programare Avansată:** Suport complet pentru RRULE și cron pentru programări complexe, conștiente de fusul orar.
+- **Execuție Fiabilă:** Garantează zero pierderi de lucru cu stare persistentă și mecanisme robuste de reîncercare.
+- **Pipeline-uri Declarative:** Definiți fluxuri de lucru complexe cu o sintaxă simplă și puternică.
+- **Observabilitate Completă:** Monitorizare, jurnalizare și verificări de sănătate de nivel de producție.
