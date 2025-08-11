@@ -106,6 +106,17 @@ pip install -r requirements.txt
 
 ### Conventional Commits for Automated Releases
 
+### Proactive Synchronization Protocol
+
+To prevent push rejections and merge conflicts caused by a stale local state, the following workflow is **mandatory** before pushing changes:
+
+1.  **Stash Local Changes (If Necessary):** If the working directory is dirty, stash any uncommitted changes (`git stash`).
+2.  **Pull with Rebase:** Always execute `git pull --rebase origin main` to fetch and apply remote changes *before* attempting a push. This ensures the local branch is perfectly synchronized with the remote.
+3.  **Pop Stash (If Necessary):** Re-apply stashed changes (`git stash pop`).
+4.  **Push Changes:** Proceed with the `git push origin main` command.
+
+This "pull-before-push" discipline is non-negotiable and guarantees a clean, conflict-free contribution history.
+
 **The project uses Python Semantic Release for automated versioning and releases.** All commits must follow [Conventional Commits](https://conventionalcommits.org/) format:
 
 ```
