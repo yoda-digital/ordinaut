@@ -1,0 +1,75 @@
+site_name: Ordinaut Documentation
+site_url: https://yoda-digital.github.io/ordinaut/
+repo_url: https://github.com/yoda-digital/ordinaut
+repo_name: yoda-digital/ordinaut
+edit_uri: "edit/main/docs/"
+
+theme:
+  name: material
+  language: en
+  logo: assets/ordinaut_logo.png
+  favicon: assets/ordinaut_logo.png
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: suffix
+      reconfigure_material: true
+      languages:
+        - locale: en
+          name: English
+          build: true
+          default: true
+        - locale: ro
+          name: Română
+          build: true
+        - locale: ru
+          name: Русский
+          build: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - 'Getting Started':
+    - 'Overview': 'getting-started/overview.md'
+    - 'Installation': 'getting-started/installation.md'
+    - 'Quick Start Tutorial': 'getting-started/quick-start.md'
+  - 'Guides':
+    - 'Core Concepts': 'guides/concepts.md'
+    - 'Scheduling (RRULE)': 'guides/scheduling.md'
+    - 'Pipelines & Tools': 'guides/pipelines.md'
+    - 'Development': 'guides/development.md'
+  - 'API Reference':
+    - 'Authentication': 'api/authentication.md'
+    - 'Tasks': 'api/tasks.md'
+    - 'Runs': 'api/runs.md'
+    - 'Events': 'api/events.md'
+    - 'Health': 'api/health.md'
+  - 'Operations':
+    - 'Deployment': 'operations/deployment.md'
+    - 'Monitoring': 'operations/monitoring.md'
+    - 'Troubleshooting': 'operations/troubleshooting.md'
+  - 'Project':
+    - 'Changelog': 'project/changelog.md'
+    - 'Status & Reports': 'project/status_reports.md'

@@ -254,7 +254,7 @@ The system implements a **proven architecture** for reliable task orchestration:
 - `GET /health/ready` - Kubernetes readiness probe
 - `GET /health/live` - Kubernetes liveness probe
 
-See [API.md](API.md) for complete endpoint documentation with examples.
+See [API Reference](docs/api/api_reference.md) for complete endpoint documentation with examples.
 
 ## System Requirements
 
@@ -274,11 +274,11 @@ See [API.md](API.md) for complete endpoint documentation with examples.
 
 ## Next Steps
 
-1. **[Quick Start](DEPLOYMENT.md#quick-start)** - Get the system running in 5 minutes
-2. **[API Reference](API.md)** - Complete REST API documentation
-3. **[Development Setup](DEVELOPMENT.md)** - Contribute and extend the system
-4. **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues and solutions
-5. **[Production Deployment](DEPLOYMENT.md)** - Scale and monitor in production
+1. **[Quick Start](docs/getting-started/quick-start.md)** - Get the system running in 5 minutes
+2. **[API Reference](docs/api/api_reference.md)** - Complete REST API documentation
+3. **[Development Setup](docs/guides/development.md)** - Contribute and extend the system
+4. **[Troubleshooting](docs/operations/troubleshooting.md)** - Common issues and solutions
+5. **[Production Deployment](docs/operations/deployment.md)** - Scale and monitor in production
 
 ## Community and Support
 
@@ -293,4 +293,4 @@ See [LICENSE](LICENSE) for details.
 
 ---
 
-**Transform your disconnected AI assistants into a coordinated personal productivity system.** Start with the [Quick Start](DEPLOYMENT.md#quick-start) guide and have your orchestrator running in 5 minutes.
+**Transform your disconnected AI assistants into a coordinated personal productivity system.** Start with the [Quick Start](docs/getting-started/quick-start.md) guide and have your orchestrator running in 5 minutes.
