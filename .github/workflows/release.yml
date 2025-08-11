@@ -245,6 +245,49 @@ jobs:
           echo "Latest tag: $LATEST_TAG"
           echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 
+      - name: 🔄 Sync Changelog Files
+        if: steps.latest-release.outputs.tag != ''
+        run: |
+          echo "🔄 Syncing changelog files after semantic-release updates..."
+          
+          # 1. Copy docs changelog to root for GitHub convention
+          if [ -f "docs/project/changelog.md" ]; then
+            echo "📄 Creating root CHANGELOG.md from docs/project/changelog.md"
+            cp docs/project/changelog.md CHANGELOG.md
+          fi
+          
+          # 2. Sync localized versions with English content
+          if [ -f "docs/project/changelog.md" ]; then
+            echo "🌐 Syncing localized changelog files"
+            # Romanian version
+            if [ -f "docs/project/changelog.ro.md" ]; then
+              cp docs/project/changelog.md docs/project/changelog.ro.md
+              echo "   ✅ Synced changelog.ro.md"
+            fi
+            # Russian version  
+            if [ -f "docs/project/changelog.ru.md" ]; then
+              cp docs/project/changelog.md docs/project/changelog.ru.md
+              echo "   ✅ Synced changelog.ru.md" 
+            fi
+          fi
+          
+          # 3. Check if changes were made
+          if git diff --quiet; then
+            echo "ℹ️  No changelog sync needed - files already up to date"
+          else
+            echo "📝 Changelog files updated, committing sync..."
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add CHANGELOG.md docs/project/changelog.*.md
+            git commit -m "chore(docs): sync changelog files after release ${{ steps.latest-release.outputs.tag }}
+
+            - Copy docs/project/changelog.md to root CHANGELOG.md for GitHub convention
+            - Sync localized changelog versions with latest content
+            - Automated post-release changelog synchronization"
+            git push origin main
+            echo "✅ Changelog synchronization completed"
+          fi
+
       - name: 📝 Update Release Notes
         if: steps.latest-release.outputs.tag != ''
         run: |
@@ -275,6 +318,7 @@ jobs:
           echo "  - ghcr.io/${{ github.repository_owner }}/ordinaut-worker:${{ steps.latest-release.outputs.tag }}"
           echo "🏗️ Multi-architecture support: linux/amd64, linux/arm64, linux/arm/v7"
           echo "🔒 Security attestations: Build provenance and SBOM included"
+          echo "📄 Changelog synchronized: Root CHANGELOG.md and localized versions updated"
           echo "📊 Metrics and observability maintained"
           
           # Check Docker publishing status
