@@ -7,6 +7,6 @@ Ordinaut system.
 
 from .tick import SchedulerService
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 __all__ = ['SchedulerService']
