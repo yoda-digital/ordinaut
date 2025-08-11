@@ -57,9 +57,9 @@ open http://localhost:8080/docs
 - `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - Task scheduling service  
 - `ghcr.io/yoda-digital/ordinaut-worker:latest` - Job execution service
 
-**Supported platforms**: `linux/amd64`, `linux/arm64` (Apple Silicon, AWS Graviton, modern ARM)
+**Supported platforms**: `linux/amd64` (Intel/AMD, runs on all major cloud providers)
 **Security**: All images include build attestations and SBOM for supply chain security
-**ARM Optimization**: ARM builds use compatibility-optimized dependencies for reliable deployment
+**Reliability**: Single-platform builds ensure maximum stability and compatibility
 
 ## Architecture Overview
 

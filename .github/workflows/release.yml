@@ -174,17 +174,17 @@ jobs:
             [worker.containerd]
               max-parallelism = 2
 
-      - name: 🏗️ Set up QEMU (Multi-arch)
+      - name: 🏗️ Set up QEMU (Multi-arch)  
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
 
       - name: 🔐 Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GH_TOKEN }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🏗️ Build and Push Multi-arch Image
         id: build
@@ -192,7 +192,7 @@ jobs:
         with:
           context: .
           file: ./ops/Dockerfile.${{ matrix.service }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -224,9 +224,9 @@ jobs:
           echo "### Service: ${{ matrix.service }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Image**: \`ghcr.io/${{ github.repository_owner }}/ordinaut-${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: \`${{ needs.release.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Platforms**: \`linux/amd64, linux/arm64\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platforms**: \`linux/amd64\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Digest**: \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **ARM Support**: ✅ Native ARM64 with optimized dependencies" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Single-platform build for maximum reliability" >> $GITHUB_STEP_SUMMARY
           echo "- **Attestation**: ✅ Signed with build provenance and SBOM" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🚀 Usage" >> $GITHUB_STEP_SUMMARY
