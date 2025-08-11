@@ -16,6 +16,7 @@ Usage: $0 [ENVIRONMENT] [OPTIONS]
 ENVIRONMENT:
     dev     Start in development mode (default)
     prod    Start in production mode
+    ghcr    Use pre-built images from GitHub Container Registry
 
 OPTIONS:
     --build     Force rebuild of Docker images
@@ -27,7 +28,11 @@ Examples:
     $0                  # Start in development mode
     $0 dev --build      # Start in dev mode, force rebuild
     $0 prod --clean     # Start in prod mode, clean first
+    $0 ghcr --logs      # Use GHCR images and follow logs
     $0 dev --logs       # Start in dev mode and follow logs
+    
+    # GHCR with specific version:
+    ORDINAUT_VERSION=v1.4.8 $0 ghcr
 
 EOF
 }
@@ -109,6 +114,11 @@ start_services() {
         if [ -f ".env" ]; then
             compose_cmd="$compose_cmd --env-file .env"
         fi
+    elif [ "$env" = "ghcr" ]; then
+        compose_cmd="docker compose -f docker-compose.ghcr.yml"
+        echo "🐳 Using pre-built images from GitHub Container Registry"
+        echo "   Version: ${ORDINAUT_VERSION:-latest}"
+        echo "   Multi-architecture support included"
     fi
     
     if [ "$build_flag" = "true" ]; then
@@ -156,7 +166,7 @@ FOLLOW_LOGS="false"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        dev|prod)
+        dev|prod|ghcr)
             ENVIRONMENT="$1"
             shift
             ;;

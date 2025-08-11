@@ -126,12 +126,110 @@ jobs:
             CHANGELOG.md
           retention-days: 30
 
+  docker-publish:
+    name: 🐳 Publish Docker Images
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [release]
+    if: success() && needs.release.outputs.tag != ''
+    timeout-minutes: 60
+    
+    strategy:
+      matrix:
+        service: [api, scheduler, worker]
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: 🏷️ Extract Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/ordinaut-${{ matrix.service }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.tag }}
+            type=semver,pattern={{major}},value=${{ needs.release.outputs.tag }}
+            type=sha,prefix={{branch}}-,suffix=-{{date 'YYYYMMDD-HHmmss'}},enable=true
+          labels: |
+            org.opencontainers.image.title=Ordinaut ${{ matrix.service }}
+            org.opencontainers.image.description=AI agent orchestrator - ${{ matrix.service }} service
+            org.opencontainers.image.vendor=Yoda Digital
+            org.opencontainers.image.version=${{ needs.release.outputs.tag }}
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
+
+      - name: 🏗️ Set up QEMU (Multi-arch)
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+
+      - name: 🔐 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: 🏗️ Build and Push Multi-arch Image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./ops/Dockerfile.${{ matrix.service }}
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          provenance: true
+          sbom: true
+          annotations: |
+            org.opencontainers.image.title=Ordinaut ${{ matrix.service }}
+            org.opencontainers.image.description=AI agent orchestrator - ${{ matrix.service }} service
+            org.opencontainers.image.version=${{ needs.release.outputs.tag }}
+
+      - name: 🔍 Generate Security Attestation
+        uses: actions/attest-build-provenance@v1
+        id: attest
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/ordinaut-${{ matrix.service }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: 📊 Image Summary
+        run: |
+          echo "## 🐳 Docker Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Service: ${{ matrix.service }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: \`ghcr.io/${{ github.repository_owner }}/ordinaut-${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: \`${{ needs.release.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platforms**: \`linux/amd64, linux/arm64, linux/arm/v7\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Digest**: \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Attestation**: ✅ Signed with build provenance" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Usage" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "docker run --rm ghcr.io/${{ github.repository_owner }}/ordinaut-${{ matrix.service }}:${{ needs.release.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
   post-release:
     name: 📊 Post-Release Tasks
     runs-on: ubuntu-latest
     environment: production
-    needs: [release]
-    if: success()
+    needs: [release, docker-publish]
+    if: always() && needs.release.result == 'success'
     
     steps:
       - name: 📥 Checkout Repository
@@ -171,18 +269,54 @@ jobs:
           echo "✅ Release pipeline completed successfully!"
           echo "🚀 New version: ${{ steps.latest-release.outputs.tag }}"
           echo "📦 Artifacts uploaded to GitHub Releases"
+          echo "🐳 Docker images published to GHCR:"
+          echo "  - ghcr.io/${{ github.repository_owner }}/ordinaut-api:${{ steps.latest-release.outputs.tag }}"
+          echo "  - ghcr.io/${{ github.repository_owner }}/ordinaut-scheduler:${{ steps.latest-release.outputs.tag }}"
+          echo "  - ghcr.io/${{ github.repository_owner }}/ordinaut-worker:${{ steps.latest-release.outputs.tag }}"
+          echo "🏗️ Multi-architecture support: linux/amd64, linux/arm64, linux/arm/v7"
+          echo "🔒 Security attestations: Build provenance and SBOM included"
           echo "📊 Metrics and observability maintained"
+          
+          # Check Docker publishing status
+          if [ "${{ needs.docker-publish.result }}" = "success" ]; then
+            echo "✅ Docker images published successfully"
+          elif [ "${{ needs.docker-publish.result }}" = "failure" ]; then
+            echo "⚠️ Docker image publishing failed - check logs"
+          elif [ "${{ needs.docker-publish.result }}" = "skipped" ]; then
+            echo "ℹ️ Docker image publishing skipped"
+          fi
 
   notify-failure:
     name: 🚨 Notify Failure
     runs-on: ubuntu-latest
-    needs: [release]
-    if: failure()
+    needs: [release, docker-publish]
+    if: always() && (needs.release.result == 'failure' || needs.docker-publish.result == 'failure')
     
     steps:
-      - name: 🚨 Release Failed
+      - name: 🚨 Pipeline Failed
         run: |
           echo "❌ Release pipeline failed!"
+          echo ""
+          
+          # Check specific failure points
+          if [ "${{ needs.release.result }}" = "failure" ]; then
+            echo "💥 Semantic release failed"
+            echo "   - Version bumping or changelog generation failed"
+            echo "   - Check commit message format (conventional commits required)"
+          fi
+          
+          if [ "${{ needs.docker-publish.result }}" = "failure" ]; then
+            echo "🐳 Docker image publishing failed"
+            echo "   - Multi-architecture build or GHCR push failed"
+            echo "   - Check Docker build logs and registry permissions"
+          fi
+          
+          echo ""
           echo "🔍 Check the workflow logs for details"
           echo "📧 Consider manual intervention if needed"
+          echo ""
+          echo "🔧 Common fixes:"
+          echo "   - Ensure commit follows conventional commit format"
+          echo "   - Verify GHCR registry permissions"
+          echo "   - Check Dockerfile syntax and build context"
           exit 1

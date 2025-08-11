@@ -33,12 +33,12 @@
 Get the system running in 5 minutes with Docker:
 
 ```bash
-# Clone and start the system
+# Option 1: Use pre-built images (fastest startup)
 git clone https://github.com/yoda-digital/ordinaut.git
-cd ordinaut
+cd ordinaut/ops/
+./start.sh ghcr --logs
 
-# Start all services with Docker Compose
-cd ops/
+# Option 2: Build from source (for development)
 ./start.sh dev --build --logs
 
 # Access the API documentation
@@ -49,6 +49,16 @@ open http://localhost:8080/docs
 - 📡 **REST API** at `http://localhost:8080`
 - 📊 **Health Dashboard** at `http://localhost:8080/health`
 - 📚 **Interactive Docs** at `http://localhost:8080/docs`
+
+### 🐳 Docker Images
+
+**Pre-built multi-architecture images** are available on GitHub Container Registry:
+- `ghcr.io/yoda-digital/ordinaut-api:latest` - REST API service
+- `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - Task scheduling service  
+- `ghcr.io/yoda-digital/ordinaut-worker:latest` - Job execution service
+
+**Supported platforms**: `linux/amd64`, `linux/arm64`, `linux/arm/v7`
+**Security**: All images include build attestations and SBOM for supply chain security
 
 ## Architecture Overview
 
