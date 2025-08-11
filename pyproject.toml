@@ -225,6 +225,7 @@ mode = "update"
 
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
+mask_initial_release = false
 
 [tool.semantic_release.changelog.environment]
 block_start_string = "{%"
