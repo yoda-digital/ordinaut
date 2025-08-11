@@ -132,6 +132,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: 🏷️ Get Latest Release
         id: latest-release
