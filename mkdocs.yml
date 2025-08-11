@@ -8,7 +8,7 @@ theme:
   name: material
   language: en
   logo: assets/ordinary_logo_square.png
-  favicon: assets/ordinaut_logo.png
+  favicon: assets/ordinary_logo_square.png
   features:
     - navigation.tabs
     - navigation.top
