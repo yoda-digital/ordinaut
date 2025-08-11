@@ -61,6 +61,7 @@ nav:
     - 'Pipelines & Tools': 'guides/pipelines.md'
     - 'Development': 'guides/development.md'
   - 'API Reference':
+    - 'Overview': 'api/api_reference.md'
     - 'Authentication': 'api/authentication.md'
     - 'Tasks': 'api/tasks.md'
     - 'Runs': 'api/runs.md'
