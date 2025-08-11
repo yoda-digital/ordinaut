@@ -181,12 +181,21 @@ jobs:
         with:
           platforms: linux/amd64
 
-      - name: 🔐 Login to GitHub Container Registry
+      - name: 🔐 Login to GitHub Container Registry (with retry)
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GH_TOKEN }}
+          logout: false
+        timeout-minutes: 3
+
+      - name: 🔄 Retry Login on Timeout
+        if: failure()
+        run: |
+          echo "First login attempt failed, retrying with different approach..."
+          echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+        timeout-minutes: 3
 
       - name: 🏗️ Build and Push Multi-arch Image
         id: build
