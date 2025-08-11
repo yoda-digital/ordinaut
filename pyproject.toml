@@ -221,7 +221,7 @@ patch_tags = [
 
 # Changelog configuration
 [tool.semantic_release.changelog]
-mode = "update"
+mode = "init"
 
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
