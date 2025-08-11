@@ -132,7 +132,7 @@ jobs:
     environment: production
     needs: [release]
     if: success() && needs.release.outputs.tag != ''
-    timeout-minutes: 60
+    timeout-minutes: 120
     
     strategy:
       matrix:
@@ -168,11 +168,17 @@ jobs:
         with:
           driver-opts: |
             network=host
+          config-inline: |
+            [worker.oci]
+              max-parallelism = 2
+            [worker.containerd]
+              max-parallelism = 2
 
       - name: 🏗️ Set up QEMU (Multi-arch)
         uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
+          image: tonistiigi/qemu:7.2.0-1
 
       - name: 🔐 Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -181,7 +187,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GH_TOKEN }}
 
-      - name: 🏗️ Build and Push Multi-arch Image
+      - name: 🏗️ Build and Push Multi-arch Image (with retry)
         id: build
         uses: docker/build-push-action@v5
         with:
@@ -195,29 +201,72 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
           provenance: true
           sbom: true
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+            BUILDKIT_MULTI_PLATFORM=1
           annotations: |
             org.opencontainers.image.title=Ordinaut ${{ matrix.service }}
+            org.opencontainers.image.description=AI agent orchestrator - ${{ matrix.service }} service
+            org.opencontainers.image.version=${{ needs.release.outputs.tag }}
+
+      - name: 🔄 Retry Build on Failure (ARM-specific)
+        if: failure() && steps.build.conclusion == 'failure'
+        id: retry-build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./ops/Dockerfile.${{ matrix.service }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          provenance: true
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+            PIP_DEFAULT_TIMEOUT=300
+          annotations: |
+            org.opencontainers.image.title=Ordinaut ${{ matrix.service }} (retry)
             org.opencontainers.image.description=AI agent orchestrator - ${{ matrix.service }} service
             org.opencontainers.image.version=${{ needs.release.outputs.tag }}
 
       - name: 🔍 Generate Security Attestation
         uses: actions/attest-build-provenance@v1
         id: attest
+        if: success() && (steps.build.conclusion == 'success' || steps.retry-build.conclusion == 'success')
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/ordinaut-${{ matrix.service }}
-          subject-digest: ${{ steps.build.outputs.digest }}
+          subject-digest: ${{ steps.retry-build.outputs.digest || steps.build.outputs.digest }}
           push-to-registry: true
 
       - name: 📊 Image Summary
+        if: success() || failure()
         run: |
-          echo "## 🐳 Docker Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "## 🐳 Docker Image Build Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Service: ${{ matrix.service }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Image**: \`ghcr.io/${{ github.repository_owner }}/ordinaut-${{ matrix.service }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: \`${{ needs.release.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Platforms**: \`linux/amd64, linux/arm64, linux/arm/v7\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Digest**: \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Attestation**: ✅ Signed with build provenance" >> $GITHUB_STEP_SUMMARY
+          
+          # Determine build status and platforms
+          if [ "${{ steps.build.conclusion }}" = "success" ]; then
+            echo "- **Status**: ✅ Build successful (first attempt)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Platforms**: \`linux/amd64, linux/arm64, linux/arm/v7\`" >> $GITHUB_STEP_SUMMARY
+            echo "- **Digest**: \`${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.retry-build.conclusion }}" = "success" ]; then
+            echo "- **Status**: ✅ Build successful (retry without arm/v7)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Platforms**: \`linux/amd64, linux/arm64\` (arm/v7 excluded due to build issues)" >> $GITHUB_STEP_SUMMARY  
+            echo "- **Digest**: \`${{ steps.retry-build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Status**: ❌ Build failed" >> $GITHUB_STEP_SUMMARY
+            echo "- **Issue**: Multi-architecture build failed, check logs for ARM compilation issues" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ "${{ steps.attest.conclusion }}" = "success" ]; then
+            echo "- **Attestation**: ✅ Signed with build provenance and SBOM" >> $GITHUB_STEP_SUMMARY
+          fi
+          
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🚀 Usage" >> $GITHUB_STEP_SUMMARY
           echo '```bash' >> $GITHUB_STEP_SUMMARY
