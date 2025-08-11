@@ -7,7 +7,7 @@ edit_uri: "edit/main/docs/"
 theme:
   name: material
   language: en
-  logo: assets/ordinaut_logo.png
+  logo: assets/ordinary_logo_square.png
   favicon: assets/ordinaut_logo.png
   features:
     - navigation.tabs

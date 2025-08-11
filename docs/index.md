@@ -1,3 +1,13 @@
+<div align="center">
+  <a href="https://github.com/yoda-digital/ordinaut" target="_blank" rel="noopener">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="../assets/ordinaut_logo.png">
+      <source media="(prefers-color-scheme: light)" srcset="../assets/ordinaut_logo.png">
+      <img alt="Ordinaut Logo" src="../assets/ordinaut_logo.png" width="200" height="auto">
+    </picture>
+  </a>
+</div>
+
 # Welcome to Ordinaut
 
 **Lightweight, event-driven orchestrator for AI agents and pipelines with RRULE scheduling, persistent state, retries, and full observability.**

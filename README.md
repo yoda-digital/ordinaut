@@ -254,7 +254,7 @@ The system implements a **proven architecture** for reliable task orchestration:
 - `GET /health/ready` - Kubernetes readiness probe
 - `GET /health/live` - Kubernetes liveness probe
 
-See [API Reference](docs/api/api_reference.md) for complete endpoint documentation with examples.
+See [API Reference](https://yoda-digital.github.io/ordinaut/api/api_reference/) for complete endpoint documentation with examples.
 
 ## System Requirements
 
