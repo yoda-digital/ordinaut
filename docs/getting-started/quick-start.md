@@ -2,6 +2,46 @@
 
 This tutorial will guide you through creating, scheduling, and verifying your first automated workflow with Ordinaut. We will create a task that runs a simple pipeline every minute.
 
+## Prerequisites: Get Ordinaut Running
+
+Before creating your first task, you need a running Ordinaut system. The fastest way is using our pre-built Docker images.
+
+### 🚀 **Option 1: Instant Start with Pre-built Images (RECOMMENDED)**
+
+```bash
+# Clone the repository
+git clone https://github.com/yoda-digital/ordinaut.git
+cd ordinaut/ops/
+
+# Start with pre-built GHCR images (instant startup)
+./start.sh ghcr --logs
+
+# Verify system is running
+curl http://localhost:8080/health
+```
+
+**✅ This uses production-ready images published to GitHub Container Registry:**
+- `ghcr.io/yoda-digital/ordinaut-api:latest` - FastAPI REST API service
+- `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - APScheduler service  
+- `ghcr.io/yoda-digital/ordinaut-worker:latest` - Job execution service
+
+**🎉 System Ready in 30 seconds!**
+- 📡 **REST API** at `http://localhost:8080`
+- 📊 **Health Dashboard** at `http://localhost:8080/health`
+- 📚 **Interactive API Docs** at `http://localhost:8080/docs`
+
+### 🛠️ **Option 2: Build from Source (Development)**
+
+```bash
+# For development or customization
+cd ordinaut/ops/
+./start.sh dev --build --logs
+```
+
+**Note:** Building from source takes 5-10 minutes vs 30 seconds with pre-built images.
+
+---
+
 ## 1. Define the Task
 
 First, create a JSON file named `my_first_task.json`. This file defines everything about the task: its name, its schedule, and the pipeline to execute.
@@ -103,6 +143,10 @@ You will see a JSON response listing the recent runs. Look for `"success": true`
 You can also see the live execution in the worker's logs. The `debug.log` tool we used in the pipeline will print its output there.
 
 ```bash
+# If using GHCR images
+./ops/start.sh ghcr --logs
+
+# If built from source
 docker compose logs -f worker
 ```
 

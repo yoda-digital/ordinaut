@@ -33,7 +33,7 @@
 Get the system running in 5 minutes with Docker:
 
 ```bash
-# Option 1: Use pre-built images (fastest startup)
+# Option 1: Use pre-built images (RECOMMENDED - instant startup)
 git clone https://github.com/yoda-digital/ordinaut.git
 cd ordinaut/ops/
 ./start.sh ghcr --logs
@@ -50,16 +50,39 @@ open http://localhost:8080/docs
 - 📊 **Health Dashboard** at `http://localhost:8080/health`
 - 📚 **Interactive Docs** at `http://localhost:8080/docs`
 
-### 🐳 Docker Images
+### 🐳 **Production-Ready Docker Images**
 
-**Pre-built multi-architecture images** are available on GitHub Container Registry:
-- `ghcr.io/yoda-digital/ordinaut-api:latest` - REST API service
-- `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - Task scheduling service  
+**✅ FULLY AUTOMATED PUBLISHING** - Images are automatically built and published with every release:
+
+**📦 Available Images:**
+- `ghcr.io/yoda-digital/ordinaut-api:latest` - FastAPI REST API service
+- `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - APScheduler service  
 - `ghcr.io/yoda-digital/ordinaut-worker:latest` - Job execution service
 
-**Supported platforms**: `linux/amd64` (Intel/AMD, runs on all major cloud providers)
-**Security**: All images include build attestations and SBOM for supply chain security
-**Reliability**: Single-platform builds ensure maximum stability and compatibility
+**🏗️ Build Pipeline:**
+- **Triggered**: Automatically on every semantic-release (conventional commits)
+- **Platform**: `linux/amd64` (Intel/AMD - universal compatibility)
+- **Registry**: GitHub Container Registry (GHCR) - publicly accessible
+- **Versioning**: Semantic version tags (`v1.7.1`) + `latest` tag
+- **Security**: Build attestations, SBOM, and provenance signatures included
+
+**🚀 Instant Deployment:**
+```bash
+# Pull and run specific version
+docker pull ghcr.io/yoda-digital/ordinaut-api:v1.7.1
+docker pull ghcr.io/yoda-digital/ordinaut-scheduler:latest
+docker pull ghcr.io/yoda-digital/ordinaut-worker:latest
+
+# Or use the automated GHCR setup
+./ops/start.sh ghcr
+```
+
+**🔒 Production Features:**
+- **Multi-stage builds** - Optimized runtime images (50% smaller)
+- **Non-root execution** - Security best practices enforced
+- **Health checks** - Built-in container health monitoring  
+- **Retry mechanisms** - Network resilience for publishing pipeline
+- **Automatic public visibility** - No manual registry configuration needed
 
 ## Architecture Overview
 

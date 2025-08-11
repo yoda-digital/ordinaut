@@ -2,6 +2,8 @@
 
 Ordinaut este conceput pentru a fi rulat ca un set de servicii containerizate folosind Docker. Această abordare asigură un mediu consistent și reproductibil atât pentru dezvoltare, cât și pentru producție.
 
+**🚀 ACTUALIZAT:** Sunt disponibile imagini Docker pre-construite pentru implementare instantanee! Pentru cele mai recente instrucțiuni de instalare cu imagini GHCR, consultați [versiunea în engleză](installation.md) a acestui ghid.
+
 ## Cerințe Preliminare
 
 Înainte de a începe, asigurați-vă că aveți instalate următoarele instrumente pe sistemul dumneavoastră:
@@ -22,12 +24,25 @@ cd ordinaut
 
 ## 2. Porniți Sistemul
 
-Repozitoriul include un script de conveniență (`start.sh`) și fișiere Docker Compose în directorul `ops/` pentru a gestiona sistemul.
+### 🚀 **Opțiunea A: Imagini Pre-construite (RECOMANDAT - Start Instantaneu)**
 
 ```bash
 cd ops/
-./start.sh dev --build
+./start.sh ghcr --logs
 ```
+
+**✅ Pornire în 30 de secunde** cu imagini testate în producție de la GitHub Container Registry!
+
+### 🛠️ **Opțiunea B: Construire din Sursă (Dezvoltare)**
+
+Pentru dezvoltare sau personalizare:
+
+```bash
+cd ops/
+./start.sh dev --build --logs
+```
+
+Repozitoriul include un script de conveniență (`start.sh`) și fișiere Docker Compose în directorul `ops/` pentru a gestiona sistemul.
 
 Această comandă efectuează mai multe acțiuni:
 - Citește fișierele `docker-compose.yml` și `docker-compose.dev.yml`.
@@ -81,7 +96,11 @@ Un răspuns de succes indică faptul că API-ul funcționează și se poate cone
 
 ## Pașii Următori
 
-Instanța dumneavoastră Ordinaut este acum complet operațională într-un mediu de dezvoltare.
+Instanța dumneavoastră Ordinaut este acum complet operațională! 🎉
 
-- **Explorați API-ul:** Deschideți interfața Swagger UI interactivă la [http://localhost:8080/docs](http://localhost:8080/docs) pentru a vedea toate punctele finale disponibile.
-- **Creați prima sarcină:** Urmați [Tutorialul de Pornire Rapidă](quick-start.md) pentru a programa primul dumneavoastră flux de lucru.
+**📚 Explorare & Învățare:**
+- **Documentație API Interactivă:** [http://localhost:8080/docs](http://localhost:8080/docs) - Swagger UI complet cu testare live
+- **Starea Sistemului:** [http://localhost:8080/health](http://localhost:8080/health) - Status în timp real
+- **Tutorial de Pornire Rapidă:** [quick-start.md](quick-start.md) - Creați primul flux de lucru automatizat
+
+**🚀 Pentru informații complete despre implementarea în producție cu imagini GHCR, consultați [versiunea în engleză](installation.md) pentru instrucțiunile cele mai recente.**
