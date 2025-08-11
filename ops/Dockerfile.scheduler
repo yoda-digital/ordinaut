@@ -34,11 +34,17 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /build
 
 # Copy requirements first for better Docker layer caching
-COPY requirements.txt /build/requirements.txt
+COPY requirements.txt requirements-arm.txt /build/
 
-# Install Python dependencies with extended timeout for ARM builds
+# Install Python dependencies with ARM-specific handling
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir --timeout 300 -r requirements.txt
+    if [ "$(uname -m)" = "x86_64" ]; then \
+        echo "Installing x86_64 requirements"; \
+        pip install --no-cache-dir --timeout 300 -r requirements.txt; \
+    else \
+        echo "Installing ARM requirements with compatible packages"; \
+        pip install --no-cache-dir --timeout 300 -r requirements-arm.txt; \
+    fi
 
 # Runtime stage with minimal dependencies
 FROM python:3.12-slim AS base

@@ -1,0 +1,24 @@
+# ARM-optimized requirements - avoiding problematic binary packages
+fastapi==0.111.0
+uvicorn==0.30.1
+pydantic==2.8.2
+SQLAlchemy==2.0.31
+# Use psycopg2-binary instead of psycopg[binary] for ARM compatibility
+psycopg2-binary==2.9.9
+redis==5.0.7
+apscheduler==3.11.0
+python-dateutil==2.9.0.post0
+jmespath==1.0.1
+jsonschema==4.23.0
+httpx==0.27.2
+pytz==2024.1
+prometheus_client==0.20.0
+# Security and authentication - ARM compatible versions
+PyJWT==2.8.0
+# Use argon2 instead of bcrypt for ARM compatibility
+passlib[argon2]==1.7.4
+python-multipart==0.0.7
+# Use older cryptography version that compiles better on ARM
+cryptography==41.0.7
+# Rate limiting
+slowapi==0.1.9
