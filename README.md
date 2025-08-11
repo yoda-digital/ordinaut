@@ -1,8 +1,8 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/ordinaut_logo.png">
-    <source media="(prefers-color-scheme: light)" srcset="assets/ordinaut_logo.png">
-    <img alt="Ordinaut Logo" src="https://raw.githubusercontent.com/yoda-digital/ordinaut/main/docs/assets/ordinary_logo_square.png" width="200" height="auto">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/ordinaut_logo.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/ordinaut_logo.png">
+    <img alt="Ordinaut Logo" src="docs/assets/ordinaut_logo.png" width="200" height="auto">
   </picture>
   
   <p>
