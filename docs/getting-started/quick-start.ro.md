@@ -2,6 +2,33 @@
 
 Acest tutorial vă va ghida prin crearea, programarea și verificarea primului dumneavoastră flux de lucru automatizat cu Ordinaut. Vom crea o sarcină care rulează un pipeline simplu în fiecare minut.
 
+## Prerequisite: Porniți Ordinaut
+
+Înainte de a crea prima sarcină, aveți nevoie de un sistem Ordinaut funcțional. Cea mai rapidă metodă este folosind imaginile noastre Docker pre-construite.
+
+### 🚀 **Pornire Instantanee cu Imagini Pre-construite (RECOMANDAT)**
+
+```bash
+# Clonați repozitoriul
+git clone https://github.com/yoda-digital/ordinaut.git
+cd ordinaut/ops/
+
+# Porniți cu imaginile GHCR (pornire instantanee)
+./start.sh ghcr --logs
+
+# Verificați că sistemul rulează
+curl http://localhost:8080/health
+```
+
+**✅ Acest mod foloseste imagini gata pentru producție publicate în GitHub Container Registry!**
+
+**🎉 Sistem Gata în 30 de secunde!**
+- 📡 **REST API** la `http://localhost:8080`
+- 📊 **Panou de Sănătate** la `http://localhost:8080/health`
+- 📚 **Documentație API Interactivă** la `http://localhost:8080/docs`
+
+---
+
 ## 1. Definiți Sarcina
 
 Mai întâi, creați un fișier JSON numit `my_first_task.json`. Acest fișier definește totul despre sarcină: numele său, programul său și pipeline-ul de executat.
