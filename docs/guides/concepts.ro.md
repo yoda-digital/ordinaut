@@ -27,6 +27,9 @@ Un obiect Sarcină conține:
 
 Ordinaut oferă **5 mecanisme distincte de declanșare** care determină când se execută sarcinile. Înțelegerea acestor declanșatoare este crucială pentru construirea fluxurilor de automatizare fiabile.
 
+!!! tip "Diagrame Interactive"
+    Diagramele de mai jos sunt **interactive** - puteți face zoom in/out cu rotița mouse-ului și **click și drag** pentru a naviga prin diagramele mari. Acest lucru este deosebit de util pentru explorarea fluxurilor arhitecturale detaliate.
+
 ```mermaid
 graph TD
     A[Declanșatoare Execuție Sarcini] --> B[Declanșatoare Temporale]

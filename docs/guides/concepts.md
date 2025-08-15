@@ -27,6 +27,9 @@ A Task object contains:
 
 Ordinaut provides **5 distinct trigger mechanisms** that determine when tasks execute. Understanding these triggers is crucial for building reliable automation workflows.
 
+!!! tip "Interactive Diagrams"
+    The diagrams below are **interactive** - you can zoom in/out with your mouse wheel and **click and drag** to pan around large diagrams. This is especially helpful for exploring the detailed architecture flows.
+
 ```mermaid
 graph TD
     A[Task Execution Triggers] --> B[Time-Based Triggers]

@@ -29,7 +29,12 @@ theme:
 
 plugins:
   - search
-  - panzoom
+  - panzoom:
+      include_selectors:
+        - ".mermaid"
+        - ".d2"
+        - "img"
+      always_show_hint: true
   - i18n:
       docs_structure: suffix
       reconfigure_material: true

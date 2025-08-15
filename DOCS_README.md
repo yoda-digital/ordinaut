@@ -5,13 +5,15 @@ This directory contains the complete documentation for Ordinaut, built with MkDo
 ## Features
 
 ### 🔍 Interactive Mermaid Diagrams
-All Mermaid diagrams in the documentation include **zoom and pan controls** for better user experience:
+All Mermaid diagrams in the documentation include **zoom, pan, and drag controls** for enhanced user experience:
 
-- **Zoom In/Out**: Use mouse wheel or pinch gestures
-- **Pan**: Click and drag to move around large diagrams
+- **Zoom In/Out**: Use mouse wheel or pinch gestures (mobile)
+- **Pan/Drag**: Click and drag to move around large diagrams
+- **Visual Hints**: Hover indicators show interactive areas
 - **Reset**: Double-click to reset to original view
+- **Mobile Support**: Touch gestures for zoom and pan on mobile devices
 
-This is particularly useful for complex architecture diagrams like the task execution triggers in the Core Concepts guide.
+This is particularly useful for complex architecture diagrams like the task execution triggers in the Core Concepts guide. The `always_show_hint: true` setting provides visual feedback to users about the interactive capabilities.
 
 ### 🌐 Multi-language Support
 Documentation is available in three languages:
