@@ -41,7 +41,7 @@ mkdocs gh-deploy
 
 ### Dependencies
 - `mkdocs-material`: Material Design theme
-- `mkdocs-i18n`: Multi-language support
+- `mkdocs-static-i18n`: Multi-language support
 - `mkdocs-panzoom-plugin`: Interactive zoom/pan for diagrams
 - `pymdown-extensions`: Enhanced Markdown features
 
