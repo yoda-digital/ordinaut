@@ -23,19 +23,202 @@ A Task object contains:
 
 ---
 
-### Schedule
+### Task Execution Triggers
 
-The **Schedule** determines when a task is triggered. Ordinaut provides a highly flexible scheduling system that supports multiple types of triggers.
+Ordinaut provides **5 distinct trigger mechanisms** that determine when tasks execute. Understanding these triggers is crucial for building reliable automation workflows.
 
-| `schedule_kind` | Description                                                                                             | Example `schedule_expr`                                     |
-|:----------------|:--------------------------------------------------------------------------------------------------------|:------------------------------------------------------------|
-| `cron`          | Uses standard 5-field cron syntax for recurring schedules.                                              | `"0 9 * * 1-5"` (Every weekday at 9:00 AM)                |
-| `rrule`         | Uses RFC-5545 Recurrence Rules for complex calendar-based logic.                                          | `"FREQ=MONTHLY;BYDAY=-1FR"` (The last Friday of every month) |
-| `once`          | Executes the task a single time at a specific ISO 8601 timestamp.                                       | `"2025-12-31T23:59:59Z"`                                  |
-| `event`         | Triggers the task when a matching event is published to the system.                                     | `"user.email.received"`                                   |
+```mermaid
+graph TD
+    A[Task Execution Triggers] --> B[Time-Based Triggers]
+    A --> C[Event-Based Triggers]
+    A --> D[Manual Triggers]
+    A --> E[Conditional Triggers]
+    A --> F[Recovery Triggers]
+    
+    B --> B1[Cron Schedules]
+    B --> B2[RRULE Patterns]
+    B --> B3[One-Time Execution]
+    
+    C --> C1[External Events]
+    C --> C2[Webhook Integration]
+    
+    D --> D1[Immediate Execution]
+    D --> D2[Task Snoozing]
+    
+    E --> E1[Condition Monitoring]
+    
+    F --> F1[Automatic Retries]
+    F --> F2[Lease Recovery]
+    
+    B1 --> G[APScheduler]
+    B2 --> G
+    B3 --> G
+    G --> H[due_work Table]
+    
+    C1 --> I[Redis Streams]
+    C2 --> I
+    I --> H
+    
+    D1 --> J[Direct API]
+    D2 --> J
+    J --> H
+    
+    E1 --> K[External Systems]
+    K --> H
+    
+    F1 --> L[Worker System]
+    F2 --> L
+    L --> H
+    
+    H --> M[SKIP LOCKED Workers]
+    M --> N[Pipeline Execution]
+```
+
+#### 1. Time-Based Triggers (APScheduler-Driven)
+
+**Cron Triggers** (`schedule_kind: "cron"`):
+- **Purpose**: Traditional Unix cron scheduling for recurring tasks
+- **Engine**: APScheduler with PostgreSQL job store
+- **Example**: `"0 9 * * 1-5"` (Every weekday at 9:00 AM)
+- **Use Cases**: Daily backups, weekly reports, regular health checks
+
+**RRULE Triggers** (`schedule_kind: "rrule"`):
+- **Purpose**: Complex RFC-5545 recurring patterns with timezone support
+- **Engine**: APScheduler + dateutil.rrule for next occurrence calculation
+- **Example**: `"FREQ=MONTHLY;BYDAY=-1FR;BYHOUR=17"` (Last Friday of month at 5 PM)
+- **Use Cases**: Calendar-aware scheduling, business day logic, holiday handling
+
+**One-Time Triggers** (`schedule_kind: "once"`):
+- **Purpose**: Execute at specific future datetime
+- **Engine**: APScheduler DateTrigger
+- **Example**: `"2025-12-25T09:00:00+02:00"` (Christmas morning)
+- **Use Cases**: Scheduled announcements, deadline reminders, maintenance windows
+
+#### 2. Event-Based Triggers
+
+**External Event Triggers** (`schedule_kind: "event"`):
+- **Purpose**: React to external system events (webhooks, notifications, alerts)
+- **Engine**: Redis Streams for durable event processing
+- **API**: `POST /events {"topic": "github.push", "payload": {...}}`
+- **Matching**: Tasks with `schedule_expr` matching the event topic are triggered
+- **Use Cases**: CI/CD pipelines, alert processing, webhook handling
+
+```mermaid
+sequenceDiagram
+    participant ES as External System
+    participant API as Ordinaut API
+    participant RS as Redis Streams
+    participant DB as Database
+    participant W as Workers
+
+    ES->>API: POST /events {"topic": "alert.critical"}
+    API->>RS: Store event in stream
+    API->>DB: Find tasks with schedule_expr="alert.critical"
+    API->>DB: Create due_work entries
+    W->>DB: Lease work with SKIP LOCKED
+    W->>W: Execute pipeline
+```
+
+#### 3. Manual/API Triggers
+
+**Immediate Execution**:
+- **API**: `POST /tasks/{task_id}/run_now`
+- **Purpose**: Human-triggered or programmatic immediate execution
+- **Process**: Direct `due_work` insertion bypassing APScheduler
+- **Use Cases**: Testing, emergency execution, manual operations
+
+**Task Snoozing**:
+- **API**: `POST /tasks/{task_id}/snooze`
+- **Purpose**: Delay scheduled execution with reason tracking
+- **Process**: SQL UPDATE to modify `run_at` timestamp
+- **Use Cases**: Maintenance windows, temporary delays, conflict resolution
+
+#### 4. Conditional Triggers
+
+**Condition-Based Tasks** (`schedule_kind: "condition"`):
+- **Purpose**: Execute when external conditions are met
+- **Engine**: External monitoring systems evaluate conditions
+- **Examples**: Disk space < 10%, error rate > 5%, temperature > 30°C
+- **Process**: Condition evaluators trigger via API when thresholds met
+
+#### 5. Recovery Triggers
+
+**Automatic Retries**:
+- **Engine**: Worker failure handling with exponential backoff
+- **Process**: Failed tasks create new `due_work` entries with delay
+- **Configuration**: `max_retries`, `backoff_strategy` in task definition
+
+**Lease Recovery**:
+- **Engine**: Coordinator cleanup of expired worker leases
+- **Process**: Reset `locked_until` to NULL for crashed worker leases
+- **Purpose**: Ensure no work is lost due to worker failures
+
+#### Complete Execution Flow
+
+```mermaid
+flowchart TB
+    subgraph "Trigger Sources"
+        TS1[APScheduler<br/>Cron/RRULE/Once]
+        TS2[External Events<br/>Redis Streams]
+        TS3[Manual Actions<br/>API Calls]
+        TS4[Condition Systems<br/>Monitoring]
+        TS5[Worker Recovery<br/>Retries/Cleanup]
+    end
+    
+    subgraph "Central Queue"
+        DW[(due_work Table)]
+    end
+    
+    subgraph "Worker Pool"
+        W1[Worker 1<br/>SKIP LOCKED]
+        W2[Worker 2<br/>SKIP LOCKED]
+        WN[Worker N<br/>SKIP LOCKED]
+    end
+    
+    subgraph "Execution"
+        PE[Pipeline Execution<br/>engine/executor.py]
+    end
+    
+    TS1 --> DW
+    TS2 --> DW
+    TS3 --> DW
+    TS4 --> DW
+    TS5 --> DW
+    
+    DW --> W1
+    DW --> W2
+    DW --> WN
+    
+    W1 --> PE
+    W2 --> PE
+    WN --> PE
+```
+
+#### Why This Architecture Works
+
+**Decoupled Design**: APScheduler handles *when*, workers handle *what*
+- Scheduler crashes don't affect execution of already-queued work
+- Worker crashes don't affect future scheduling
+- Each component scales independently
+
+**Event-Driven Flexibility**: External systems trigger complex workflows
+- Webhook integrations (GitHub, Slack, monitoring systems)
+- Real-time processing of alerts and notifications
+- Human-triggered operations through APIs
+
+**Guaranteed Execution**: SKIP LOCKED ensures exactly-once processing
+- No duplicate work under any failure scenario
+- Fair work distribution across workers
+- Immediate availability without polling delays
+
+**Comprehensive Coverage**: Every trigger scenario supported
+- Time-based: covers all scheduling needs
+- Event-based: covers all reactive needs
+- Manual: covers all human/API needs
+- Recovery: covers all failure scenarios
 
 !!! tip "Timezones are Important"
-    All schedules are timezone-aware. You should always specify a `timezone` (e.g., `Europe/Chisinau`) in your task definition to ensure schedules trigger at the correct local time, especially across Daylight Saving Time changes.
+    All time-based schedules are timezone-aware. Always specify a `timezone` (e.g., `Europe/Chisinau`) in your task definition to ensure schedules trigger at the correct local time, especially across Daylight Saving Time changes.
 
 ---
 
