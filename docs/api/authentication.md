@@ -8,7 +8,7 @@ You must include an `Authorization` header with your agent's token in every requ
 
 ```bash
 curl -H "Authorization: Bearer 00000000-0000-0000-0000-000000000001" \
-     https://api.orchestrator.example.com/v1/tasks
+     https://api.ordinaut.example.com/v1/tasks
 ```
 
 ## Agent Scopes & Permissions

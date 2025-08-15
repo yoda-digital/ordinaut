@@ -1,14 +1,14 @@
 # Prezentare Generală
 
-Ordinaut este un sistem de orchestratre conceput pentru a oferi agenților AI o coloană vertebrală comună pentru **timp, stare și disciplină**. Acesta transformă o colecție de agenți deconectați, cu un singur scop, într-un sistem coordonat și puternic, care poate executa fluxuri de lucru complexe în mod fiabil de-a lungul timpului.
+Ordinaut este un API backend de nivel enterprise pentru programarea sarcinilor, conceput pentru a fi integrat cu asistenții AI prin **Model Context Protocol (MCP)**. Oferă o infrastructură fiabilă pentru **timp, stare și disciplină**, permițând gestionarea în limbaj natural a fluxurilor de lucru complexe prin interfețe de chat.
 
-Filozofia de bază este de a gestiona părțile dificile și repetitive ale automatizării—programarea, managementul stării, reîncercările și observabilitatea—astfel încât agenții dumneavoastră să se poată concentra pe sarcinile lor specializate.
+Filozofia de bază este de a gestiona părțile dificile și repetitive ale automatizării—programarea, managementul stării, reîncercările și observabilitatea—astfel încât asistenții AI să se poată concentra pe conversația cu utilizatorii, în timp ce Ordinaut asigură execuția fiabilă în fundal.
 
 ## Problema Principală pe care o Rezolvă Ordinaut
 
-Imaginați-vă că aveți mai mulți agenți AI: unul care vă poate citi e-mailurile, unul care poate verifica vremea și altul care vă poate gestiona calendarul. Singuri, aceștia sunt utili. Dar pentru a crea un sistem cu adevărat inteligent, aveți nevoie ca ei să lucreze împreună. De exemplu, pentru a-i face să pregătească automat un briefing de dimineață, au nevoie de un coordonator.
+Asistenții AI moderni (ChatGPT, Claude, Copilot) sunt excepționali la conversații, dar nu au capacitatea de a programa și executa sarcini în timp. De exemplu, ați putea cere unui asistent să "verifice vremea în fiecare dimineață la 8 AM și să-mi trimită un mesaj", dar nu poate executa această cerere în mod autonom în timp.
 
-Ordinaut este acel coordonator. Acesta oferă cadrul pentru a defini, programa și monitoriza fluxurile de lucru care conectează abilitățile agenților dumneavoastră.
+Ordinaut rezolvă această problemă servind ca backend fiabil pentru programarea sarcinilor, conectându-se cu asistenții AI prin Model Context Protocol (MCP). Utilizatorii pot cere sarcinilor complexe în limbaj natural prin chat, iar Ordinaut le execută conform programului stabilit.
 
 ## Arhitectura Sistemului
 
@@ -16,13 +16,13 @@ Ordinaut este construit pe o fundație de tehnologii dovedite, de nivel de produ
 
 ```mermaid
 graph TD
-    subgraph Agenți & Sisteme Externe
-        A[Agenți]
-        E[API-uri Externe]
+    subgraph Asistenți AI & Sisteme Externe
+        A[ChatGPT/Claude<br/>prin MCP]
+        E[API-uri Externe<br/>& Integrări]
     end
 
     subgraph Nucleul Ordinaut
-        B[Serviciu FastAPI]
+        B[Serviciu FastAPI<br/>Backend API]
         C[Motor de Pipeline]
         D[Grup de Workeri]
         F[Scheduler]
@@ -34,7 +34,7 @@ graph TD
         I[Stivă de Observabilitate]
     end
 
-    A -- Apeluri API REST --> B
+    A -- Integrare MCP --> B
     B -- Execută --> C
     C -- Apelează --> E
     C -- Publică Evenimente --> H
@@ -50,7 +50,7 @@ graph TD
 
 ### De Ce Această Arhitectură?
 
-*   **Serviciu FastAPI (Gateway-ul):** Oferă un API REST modern, securizat și bine documentat pentru ca agenții să interacționeze cu sistemul. Natura sa asincronă permite gestionarea unui volum mare de cereri.
+*   **Serviciu FastAPI (Backend API):** Oferă un API REST modern, securizat și bine documentat pentru ca asistenții AI să interacționeze cu sistemul prin MCP. Natura sa asincronă permite gestionarea unui volum mare de cereri de programare.
 *   **Bază de Date PostgreSQL (Creierul):** Acționează ca sursă unică și durabilă a adevărului. Stocarea tuturor sarcinilor, programărilor și istoricelor de rulare într-o bază de date relațională puternică precum PostgreSQL garantează conformitatea ACID și zero pierderi de lucru, chiar și în cazul unei defecțiuni a sistemului.
 *   **Grup de Workeri & `SKIP LOCKED` (Motorul):** Aceasta este inima fiabilității Ordinaut. Modelul `FOR UPDATE SKIP LOCKED` este o caracteristică canonică a PostgreSQL pentru construirea de cozi de sarcini robuste. Permite mai multor workeri să preia sarcini în mod sigur și concurent din tabela `due_work` fără a procesa vreodată același element de două ori. Acest lucru permite scalabilitate orizontală și un debit ridicat.
 *   **APScheduler (Ceasul):** O bibliotecă testată în luptă pentru gestionarea întregii logici temporale. Calculează *când* ar trebui să ruleze sarcinile și le plasează în coada `due_work` pentru workeri. Suportul său atât pentru cron, cât și pentru RRULE-uri complexe, oferă o flexibilitate imensă în programare.

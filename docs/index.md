@@ -10,9 +10,9 @@
 
 # Welcome to Ordinaut
 
-**Lightweight, event-driven orchestrator for AI agents and pipelines with RRULE scheduling, persistent state, retries, and full observability.**
+**Enterprise-grade task scheduling API with RRULE support, pipeline execution, and comprehensive observability. Purpose-built as the backend for AI assistant integrations via Model Context Protocol (MCP).**
 
-Ordinaut provides the backbone for your AI agents, transforming disconnected assistants into a coordinated, reliable, and observable system.
+Ordinaut enables natural language management of complex recurring workflows through chat interfaces. AI assistants handle conversation, Ordinaut handles reliable execution.
 
 ## Get Started
 

@@ -1,6 +1,6 @@
 # API Reference
 
-The Ordinaut REST API is the primary interface for agents and external systems to interact with the orchestrator. The API is built with FastAPI and provides automatic, interactive documentation.
+The enterprise task scheduling system REST API is the primary interface for AI assistants and external systems to interact with the task scheduling backend via Model Context Protocol (MCP). The API is built with FastAPI and provides automatic, interactive documentation.
 
 ## Interactive Documentation
 

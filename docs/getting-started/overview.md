@@ -1,14 +1,14 @@
 # Overview
 
-Ordinaut is an orchestration system designed to give your AI agents a shared backbone for **time, state, and discipline**. It transforms a collection of disconnected, single-purpose agents into a coordinated, powerful system that can execute complex workflows reliably over time.
+Ordinaut is an enterprise-grade task scheduling API designed as the backend for AI assistant integrations via Model Context Protocol (MCP). It enables AI assistants like Claude Desktop and ChatGPT to manage complex recurring workflows through natural conversation.
 
-The core philosophy is to handle the difficult, repetitive parts of automation—scheduling, state management, retries, and observability—so your agents can focus on their specialized tasks.
+The core philosophy is to handle the difficult, repetitive parts of automation—scheduling, state management, retries, and observability—while AI assistants focus on understanding user intent and translating it to scheduled actions.
 
 ## The Core Problem Ordinaut Solves
 
-Imagine you have several AI agents: one that can read your emails, one that can check the weather, and another that can manage your calendar. By themselves, they are useful. But to create a truly intelligent system, you need them to work together. For example, to have them automatically prepare a morning briefing, they need a coordinator.
+You want to tell an AI assistant: "Every weekday at 8am, check my calendar, get the weather, and send me a summary." The AI understands your intent perfectly, but it can't persist that instruction or reliably execute it in the future.
 
-Ordinaut is that coordinator. It provides the framework to define, schedule, and monitor the workflows that connect your agents' skills.
+Ordinaut solves this by providing a persistent, reliable backend that AI assistants can use to schedule and manage complex recurring workflows. The AI handles the conversation, Ordinaut handles the execution.
 
 ## System Architecture
 

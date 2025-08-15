@@ -161,7 +161,7 @@ jobs:
             type=sha,prefix={{branch}}-,suffix=-{{date 'YYYYMMDD-HHmmss'}},enable=true
           labels: |
             org.opencontainers.image.title=Ordinaut ${{ matrix.service }}
-            org.opencontainers.image.description=AI agent orchestrator - ${{ matrix.service }} service
+            org.opencontainers.image.description=Task scheduling API backend - ${{ matrix.service }} service
             org.opencontainers.image.vendor=Yoda Digital
             org.opencontainers.image.version=${{ needs.release.outputs.tag }}
 
@@ -215,7 +215,7 @@ jobs:
             BUILDKIT_INLINE_CACHE=1
           annotations: |
             org.opencontainers.image.title=Ordinaut ${{ matrix.service }}
-            org.opencontainers.image.description=AI agent orchestrator - ${{ matrix.service }} service
+            org.opencontainers.image.description=Task scheduling API backend - ${{ matrix.service }} service
             org.opencontainers.image.version=${{ needs.release.outputs.tag }}
 
       - name: 🔍 Generate Security Attestation

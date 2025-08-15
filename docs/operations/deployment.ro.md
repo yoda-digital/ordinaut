@@ -1,6 +1,6 @@
 # Implementare (Deployment)
 
-Acest ghid acoperă implementarea sistemului Ordinaut într-un mediu de producție folosind Docker Compose.
+Acest ghid acoperă implementarea backend-ului API Ordinaut într-un mediu de producție folosind Docker Compose pentru programarea sarcinilor de nivel enterprise.
 
 ## Configurare pentru Producție
 

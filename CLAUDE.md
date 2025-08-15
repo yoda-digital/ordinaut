@@ -1,12 +1,12 @@
-# Ordinaut - Claude Code Project Context
+# Ordinaut - Professional Task Scheduling Backend
 
 ## Project Mission
-Build a **Ordinaut** that provides AI agents with a shared backbone for time, state, and discipline. Transform disconnected agents into a coordinated personal productivity system with bulletproof scheduling, reliable execution, and comprehensive observability.
+Build **Ordinaut**, an enterprise-grade task scheduling API with RRULE support, pipeline execution, and comprehensive observability. Purpose-built as the backend for AI assistant integrations via Model Context Protocol (MCP), enabling natural language management of complex recurring workflows through chat interfaces.
 
 ## Core Architecture Vision
 **(1) Durable Store (PostgreSQL)** → **(2) Scheduler (APScheduler)** → **(3) Event Spine (Redis Streams)** → **(4) Pipeline Executor** → **(5) MCP Bridge**
 
-This creates a persistent, coordinated "personal AI operating system" where agents can schedule future actions, maintain state across sessions, coordinate with each other, and execute reliably with retries and monitoring.
+This creates a reliable, persistent task execution system that AI assistants can manage through natural conversation. The system handles complex timing, persistence, concurrency, and error handling while AI assistants focus on understanding user intent and translating it to scheduled actions.
 
 ---
 
@@ -36,7 +36,7 @@ This creates a persistent, coordinated "personal AI operating system" where agen
 - APScheduler + SQLAlchemy + PostgreSQL is explicitly recommended by APScheduler maintainers
 - `FOR UPDATE SKIP LOCKED` is the canonical PostgreSQL pattern for safe job distribution
 - Redis Streams designed for ordered, durable event logs with consumer groups
-- MCP is the emerging standard for AI agent tool integration
+- MCP enables AI assistants to manage complex scheduling through natural language
 - **psycopg3** provides superior performance and modern Python 3.12 async support
 - **Python Semantic Release** provides industry-standard automated release management
 
@@ -185,8 +185,8 @@ BREAKING CHANGE: Legacy v1 endpoints removed. Migrate to v2 API.
 
 ## Claude Code Development Subagent System
 
-### Subagent Configuration
-The Ordinaut project uses **Claude Code's native subagent system** for specialized **development and implementation tasks**. These subagents are **development specialists** that help **build the Ordinaut system**, not end-users of the system. Subagents are configured as Markdown files with YAML frontmatter in `.claude/agents/` directory.
+### Development Subagent Configuration
+The Ordinaut project uses **development subagents** for specialized **implementation tasks**. These subagents are **development specialists** that help **build the Ordinaut system**. Subagents are configured as Markdown files with YAML frontmatter in `.claude/agents/` directory.
 
 ### How Development Subagents Work
 - **Development Focus**: Each subagent specializes in **building specific parts** of the Ordinaut
@@ -199,12 +199,12 @@ The Ordinaut project uses **Claude Code's native subagent system** for specializ
 ### Available Specialist Agents (10 configured)
 
 #### Currently Configured Development Agents (in .claude/agents/)
-- **codebase-analyzer** - Analyzes project structure and implements architectural patterns for the orchestrator
-- **database-architect** - Implements PostgreSQL schema, migrations, and SKIP LOCKED job queues for the orchestrator
+- **codebase-analyzer** - Analyzes project structure and implements architectural patterns for the task scheduling system
+- **database-architect** - Implements PostgreSQL schema, migrations, and SKIP LOCKED job queues for reliable task execution
 - **worker-system-specialist** - Builds distributed job processing and concurrency control systems  
-- **api-craftsman** - Implements FastAPI endpoints and REST APIs for the orchestrator service
-- **scheduler-genius** - Builds APScheduler integration and temporal logic for task scheduling
-- **mcp-protocol-expert** - Implements Model Context Protocol bridges and agent integrations
+- **api-craftsman** - Implements FastAPI endpoints and REST APIs for the task scheduling service
+- **scheduler-genius** - Builds APScheduler integration and temporal logic for complex recurring schedules
+- **mcp-protocol-expert** - Implements Model Context Protocol bridges for AI assistant integrations
 - **rrule-wizard** - Implements RFC-5545 RRULE processing and calendar mathematics systems
 - **observability-oracle** - Builds monitoring, metrics, logging, and alerting systems
 - **testing-architect** - Creates comprehensive test suites and quality assurance systems
@@ -734,13 +734,13 @@ curl http://production-host:8080/health  # Verify all healthy
 
 **Transformation Completed: 45% → 100% Production Ready**
 
-The Ordinaut has been successfully transformed from an advanced prototype with critical functionality gaps into a bulletproof, enterprise-grade AI agent coordination system. The architecture provides:
+The Ordinaut has been successfully built as a bulletproof, enterprise-grade task scheduling backend ready for MCP integration. The architecture provides:
 
 - **Bulletproof Scheduling**: APScheduler + PostgreSQL with RRULE and timezone support
 - **Reliable Execution**: SKIP LOCKED job queues with zero work loss guarantee  
 - **Comprehensive Observability**: Full Prometheus + Grafana monitoring stack
 - **Production Security**: JWT authentication, input validation, audit logging
-- **Operational Excellence**: Complete runbooks for 24/7 operations
+- **MCP Integration Ready**: Purpose-built API for AI assistant task management
 
 **Status: GO FOR PRODUCTION DEPLOYMENT** 🚀
 
@@ -800,4 +800,4 @@ The Ordinaut has been successfully transformed from an advanced prototype with c
 
 ---
 
-*This Ordinaut has been built with discipline, tested thoroughly, and is ready for confident production deployment with comprehensive CTO-level documentation. The system successfully transforms disconnected AI assistants into a coordinated personal productivity system with bulletproof scheduling, reliable execution, comprehensive observability, and complete business automation capabilities for Moldovan software companies.*
+*This Ordinaut has been built with discipline, tested thoroughly, and is ready for confident production deployment. The system provides AI assistants with a reliable backend for complex task scheduling and pipeline execution, enabling natural language management of sophisticated automation workflows through MCP integration.*

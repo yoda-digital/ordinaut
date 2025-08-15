@@ -1,6 +1,6 @@
 # Monitorizare
 
-Ordinaut este conceput pentru medii de producție și expune metrici cheie pentru monitorizare și alertare.
+Backend-ul API Ordinaut este conceput pentru medii de producție și expune metrici cheie pentru monitorizarea sistemului de programare a sarcinilor.
 
 ## Metrici Prometheus
 

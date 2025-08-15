@@ -1,6 +1,6 @@
 # Ghid de Pornire Rapidă
 
-Acest tutorial vă va ghida prin crearea, programarea și verificarea primului dumneavoastră flux de lucru automatizat cu Ordinaut. Vom crea o sarcină care rulează un pipeline simplu în fiecare minut.
+Acest tutorial vă va ghida prin configurarea Ordinaut ca backend API pentru programarea sarcinilor și prin crearea primul dumneavoastră flux de lucru automatizat. Vom crea o sarcină care rulează un pipeline simplu în fiecare minut prin API REST.
 
 ## Prerequisite: Porniți Ordinaut
 

@@ -2,26 +2,26 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/ordinaut_logo.png">
     <source media="(prefers-color-scheme: light)" srcset="docs/assets/ordinaut_logo.png">
-    <img alt="Ordinaut Logo" src="docs/assets/ordinaut_logo.png" width="200" height="auto">
+    <img alt="Task Scheduling System Logo" src="docs/assets/task_scheduler_logo.png" width="200" height="auto">
   </picture>
   
   <p>
-    <strong>Lightweight, event-driven orchestrator for AI agents and pipelines with RRULE scheduling, persistent state, retries, and full observability.</strong>
+    <strong>Enterprise-grade task scheduling API with RRULE support, pipeline execution, and comprehensive observability. Purpose-built as the backend for AI assistant integrations via Model Context Protocol (MCP).</strong>
   </p>
   
   <p>
-    Transform disconnected agents into a coordinated personal productivity system with bulletproof scheduling, reliable execution, and comprehensive observability.
+    Enable natural language management of complex recurring workflows through chat interfaces. AI assistants handle conversation, the system handles reliable execution.
   </p>
   
   <p>
-    <a href="https://github.com/yoda-digital/ordinaut">
-      <img src="https://img.shields.io/github/stars/yoda-digital/ordinaut?style=social" alt="GitHub stars">
+    <a href="https://github.com/yoda-digital/task-scheduler">
+      <img src="https://img.shields.io/github/stars/yoda-digital/task-scheduler?style=social" alt="GitHub stars">
     </a>
-    <a href="https://github.com/yoda-digital/ordinaut/issues">
-      <img src="https://img.shields.io/github/issues/yoda-digital/ordinaut" alt="GitHub issues">
+    <a href="https://github.com/yoda-digital/task-scheduler/issues">
+      <img src="https://img.shields.io/github/issues/yoda-digital/task-scheduler" alt="GitHub issues">
     </a>
-    <a href="https://github.com/yoda-digital/ordinaut/blob/main/LICENSE">
-      <img src="https://img.shields.io/github/license/yoda-digital/ordinaut" alt="License">
+    <a href="https://github.com/yoda-digital/task-scheduler/blob/main/LICENSE">
+      <img src="https://img.shields.io/github/license/yoda-digital/task-scheduler" alt="License">
     </a>
   </p>
 </div>
@@ -34,8 +34,8 @@ Get the system running in 5 minutes with Docker:
 
 ```bash
 # Option 1: Use pre-built images (RECOMMENDED - instant startup)
-git clone https://github.com/yoda-digital/ordinaut.git
-cd ordinaut/ops/
+git clone https://github.com/yoda-digital/task-scheduler.git
+cd task-scheduler/ops/
 ./start.sh ghcr --logs
 
 # Option 2: Build from source (for development)
@@ -45,7 +45,7 @@ cd ordinaut/ops/
 open http://localhost:8080/docs
 ```
 
-**That's it!** Your Ordinaut is now running with:
+**That's it!** Your task scheduling system is now running with:
 - 📡 **REST API** at `http://localhost:8080`
 - 📊 **Health Dashboard** at `http://localhost:8080/health`
 - 📚 **Interactive Docs** at `http://localhost:8080/docs`
@@ -55,9 +55,9 @@ open http://localhost:8080/docs
 **✅ FULLY AUTOMATED PUBLISHING** - Images are automatically built and published with every release:
 
 **📦 Available Images:**
-- `ghcr.io/yoda-digital/ordinaut-api:latest` - FastAPI REST API service
-- `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - APScheduler service  
-- `ghcr.io/yoda-digital/ordinaut-worker:latest` - Job execution service
+- `ghcr.io/yoda-digital/task-scheduler-api:latest` - FastAPI REST API service
+- `ghcr.io/yoda-digital/task-scheduler-scheduler:latest` - APScheduler service  
+- `ghcr.io/yoda-digital/task-scheduler-worker:latest` - Job execution service
 
 **🏗️ Build Pipeline:**
 - **Triggered**: Automatically on every semantic-release (conventional commits)
@@ -69,9 +69,9 @@ open http://localhost:8080/docs
 **🚀 Instant Deployment:**
 ```bash
 # Pull and run specific version
-docker pull ghcr.io/yoda-digital/ordinaut-api:v1.7.1
-docker pull ghcr.io/yoda-digital/ordinaut-scheduler:latest
-docker pull ghcr.io/yoda-digital/ordinaut-worker:latest
+docker pull ghcr.io/yoda-digital/task-scheduler-api:v1.7.1
+docker pull ghcr.io/yoda-digital/task-scheduler-scheduler:latest
+docker pull ghcr.io/yoda-digital/task-scheduler-worker:latest
 
 # Or use the automated GHCR setup
 ./ops/start.sh ghcr
@@ -86,18 +86,19 @@ docker pull ghcr.io/yoda-digital/ordinaut-worker:latest
 
 ## Architecture Overview
 
-The system implements a **proven architecture** for reliable task orchestration:
+The system implements a **proven architecture** for MCP-integrated task execution:
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌────────────────┐    ┌─────────────────┐
-│   Agents    │───▶│   FastAPI    │───▶│   PostgreSQL   │───▶│   APScheduler   │
-│(Create Tasks)│    │  (REST API)  │    │ (Durable Store)│    │  (Time Logic)   │
+│ AI Assistant│───▶│   MCP Server │───▶│   FastAPI      │───▶│   PostgreSQL    │
+│(Claude/GPT) │    │  (Natural    │    │  (REST API)    │    │ (Durable Store) │
+│             │    │  Language)   │    │                │    │                 │
 └─────────────┘    └──────────────┘    └────────────────┘    └─────────────────┘
-                           │                      ▲                      │
-                           ▼                      │                      ▼
+                           │                      │                      │
+                           ▼                      ▼                      ▼
 ┌─────────────┐    ┌──────────────┐    ┌────────────────┐    ┌─────────────────┐
-│External APIs│◀───│   Pipeline   │◀───│   Workers      │◀───│   due_work      │
-│(MCP Tools)  │    │  (Executor)  │    │(SKIP LOCKED)   │    │   (Queue)       │
+│External APIs│◀───│   Pipeline   │◀───│   Workers      │◀───│   APScheduler   │
+│(Tools)      │    │  (Executor)  │    │(SKIP LOCKED)   │    │  (Time Logic)   │
 └─────────────┘    └──────────────┘    └────────────────┘    └─────────────────┘
                            ▲                      │
                            │                      ▼
@@ -111,12 +112,12 @@ The system implements a **proven architecture** for reliable task orchestration:
 ### Core Components
 
 1. **PostgreSQL Database** - ACID-compliant durable storage with `FOR UPDATE SKIP LOCKED` job queues
-2. **APScheduler** - Battle-tested scheduling with SQLAlchemy job store for temporal logic
+2. **APScheduler** - Battle-tested scheduling with SQLAlchemy job store for temporal logic  
 3. **Redis Streams** - Ordered, durable event logs with consumer groups (`XADD`/`XREADGROUP`)
 4. **FastAPI Service** - Modern REST API with automatic OpenAPI documentation
 5. **Worker Pool** - Distributed job processors using safe work leasing patterns
 6. **Pipeline Engine** - Deterministic pipeline execution with template rendering
-7. **MCP Bridge** - Standard Model Context Protocol for agent tool integration
+7. **MCP Integration Layer** - Ready for Model Context Protocol bridge development
 
 ## Key Features
 
@@ -264,7 +265,7 @@ The system implements a **proven architecture** for reliable task orchestration:
 - APScheduler + SQLAlchemy + PostgreSQL is explicitly recommended by APScheduler maintainers
 - `FOR UPDATE SKIP LOCKED` is the canonical PostgreSQL pattern for safe job distribution
 - Redis Streams designed for ordered, durable event logs with consumer groups
-- MCP is the emerging standard for AI agent tool integration
+- MCP enables AI assistants to manage complex scheduling through natural language
 
 ## API Overview
 
@@ -327,4 +328,4 @@ See [LICENSE](LICENSE) for details.
 
 ---
 
-**Transform your disconnected AI assistants into a coordinated personal productivity system.** Start with the [Quick Start](docs/getting-started/quick-start.md) guide and have your orchestrator running in 5 minutes.
+**Enable AI assistants to manage complex automation through natural conversation.** Start with the [Quick Start](docs/getting-started/quick-start.md) guide and have your scheduling backend running in 5 minutes.

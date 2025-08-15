@@ -1,6 +1,6 @@
 # API-ul de Sarcini (Tasks)
 
-API-ul de Sarcini este interfața principală pentru crearea, gestionarea și monitorizarea fluxurilor de lucru automate.
+API-ul de Sarcini este interfața principală pentru asistenții AI să creeze, gestioneze și monitorizeze fluxurile de lucru automate prin MCP.
 
 ## `POST /tasks`
 

@@ -1,6 +1,6 @@
-# Ordinaut - Observability System
+# Enterprise Task Scheduling System - Observability
 
-Comprehensive monitoring, logging, and alerting system implementing the requirements from `plan.md` section 11 for >99.9% uptime.
+Comprehensive monitoring, logging, and alerting system for the enterprise task scheduling API with RRULE support, implementing >99.9% uptime requirements.
 
 ## Overview
 
@@ -20,13 +20,13 @@ The observability system provides complete visibility into:
 
 Prometheus-compatible metrics covering all system components:
 
-**Core Metrics (plan.md requirements):**
-- `orchestrator_step_duration_seconds{tool_addr,step_id}` - Pipeline step execution time
-- `orchestrator_step_success_total{tool_addr}` - Successful step executions
-- `orchestrator_runs_total{status}` - Task execution attempts by status
-- `orchestrator_scheduler_lag_seconds` - Time lag for overdue work
-- `orchestrator_worker_heartbeat_total` - Worker liveness indicators
-- `orchestrator_due_work_queue_depth` - Work queue backlog size
+**Core Metrics:**
+- `task_scheduler_step_duration_seconds{tool_addr,step_id}` - Pipeline step execution time
+- `task_scheduler_step_success_total{tool_addr}` - Successful step executions
+- `task_scheduler_runs_total{status}` - Task execution attempts by status
+- `task_scheduler_scheduler_lag_seconds` - Time lag for overdue work
+- `task_scheduler_worker_heartbeat_total` - Worker liveness indicators
+- `task_scheduler_due_work_queue_depth` - Work queue backlog size
 
 **Extended Metrics:**
 - HTTP request duration and status codes
@@ -36,13 +36,13 @@ Prometheus-compatible metrics covering all system components:
 
 **Usage:**
 ```python
-from observability.metrics import orchestrator_metrics
+from observability.metrics import task_scheduler_metrics
 
 # Record task execution
-orchestrator_metrics.record_task_run(task_id, agent_id, "success", duration=2.5)
+task_scheduler_metrics.record_task_run(task_id, agent_id, "success", duration=2.5)
 
 # Record pipeline step
-orchestrator_metrics.record_step_execution(
+task_scheduler_metrics.record_step_execution(
     tool_addr="google-calendar-mcp.list_events",
     step_id="fetch-calendar", 
     task_id=task_id,
@@ -261,7 +261,7 @@ The observability system is designed for minimal overhead:
 
 ```python
 # In api/main.py
-from observability.metrics import orchestrator_metrics
+from observability.metrics import task_scheduler_metrics
 from observability.logging import api_logger
 from observability.health import SystemHealthMonitor
 
@@ -281,13 +281,13 @@ async def health_check():
 
 ```python  
 # In workers/runner.py
-from observability.metrics import orchestrator_metrics
+from observability.metrics import task_scheduler_metrics
 from observability.logging import worker_logger
 
 class WorkerRunner:
     def heartbeat(self):
         # Record metrics and structured logs
-        orchestrator_metrics.record_worker_heartbeat(self.worker_id)
+        task_scheduler_metrics.record_worker_heartbeat(self.worker_id)
         worker_logger.worker_heartbeat(self.worker_id, queue_depth, active_leases)
 ```
 
@@ -353,7 +353,7 @@ curl -s http://localhost:9090/api/v1/targets | jq
 ### Adding Custom Metrics
 
 ```python
-from observability.metrics import orchestrator_metrics
+from observability.metrics import task_scheduler_metrics
 
 # Add to OrchestrationMetrics class
 self.custom_metric = Counter(
@@ -364,7 +364,7 @@ self.custom_metric = Counter(
 )
 
 # Record metric
-orchestrator_metrics.custom_metric.labels(label1="value1", label2="value2").inc()
+task_scheduler_metrics.custom_metric.labels(label1="value1", label2="value2").inc()
 ```
 
 ### Custom Alert Rules

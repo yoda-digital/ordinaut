@@ -1,17 +1,17 @@
 # Quick Start Tutorial
 
-This tutorial will guide you through creating, scheduling, and verifying your first automated workflow with Ordinaut. We will create a task that runs a simple pipeline every minute.
+This tutorial will guide you through creating, scheduling, and verifying your first automated workflow with the enterprise task scheduling system. We will create a task that runs a simple pipeline every minute.
 
-## Prerequisites: Get Ordinaut Running
+## Prerequisites: Get the System Running
 
-Before creating your first task, you need a running Ordinaut system. The fastest way is using our pre-built Docker images.
+Before creating your first task, you need a running task scheduling system. The fastest way is using our pre-built Docker images.
 
 ### 🚀 **Option 1: Instant Start with Pre-built Images (RECOMMENDED)**
 
 ```bash
 # Clone the repository
-git clone https://github.com/yoda-digital/ordinaut.git
-cd ordinaut/ops/
+git clone https://github.com/yoda-digital/task-scheduler.git
+cd task-scheduler/ops/
 
 # Start with pre-built GHCR images (instant startup)
 ./start.sh ghcr --logs
@@ -21,9 +21,9 @@ curl http://localhost:8080/health
 ```
 
 **✅ This uses production-ready images published to GitHub Container Registry:**
-- `ghcr.io/yoda-digital/ordinaut-api:latest` - FastAPI REST API service
-- `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - APScheduler service  
-- `ghcr.io/yoda-digital/ordinaut-worker:latest` - Job execution service
+- `ghcr.io/yoda-digital/task-scheduler-api:latest` - FastAPI REST API service
+- `ghcr.io/yoda-digital/task-scheduler-scheduler:latest` - APScheduler service  
+- `ghcr.io/yoda-digital/task-scheduler-worker:latest` - Job execution service
 
 **🎉 System Ready in 30 seconds!**
 - 📡 **REST API** at `http://localhost:8080`
@@ -34,7 +34,7 @@ curl http://localhost:8080/health
 
 ```bash
 # For development or customization
-cd ordinaut/ops/
+cd task-scheduler/ops/
 ./start.sh dev --build --logs
 ```
 

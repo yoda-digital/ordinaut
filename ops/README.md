@@ -1,8 +1,8 @@
-# Ordinaut - Docker Infrastructure
+# Task Scheduling System - Docker Infrastructure
 
 ## 🚀 Complete Docker Containerization
 
-This directory contains the complete Docker infrastructure for the Ordinaut, implementing all requirements from `plan.md` section 3.
+This directory contains the complete Docker infrastructure for the enterprise task scheduling system with RRULE support, pipeline execution, and comprehensive observability - purpose-built as the backend for AI assistant integrations via Model Context Protocol (MCP).
 
 ## 📁 Files Created
 
@@ -28,7 +28,7 @@ This directory contains the complete Docker infrastructure for the Ordinaut, imp
 
 ### Services Containerized
 
-1. **postgres**: PostgreSQL 16.4 with orchestrator database
+1. **postgres**: PostgreSQL 16.4 with task scheduling database
    - Automatic schema application from `migrations/version_0001.sql`
    - Health checks and proper timezone configuration
    - Named volumes for data persistence
@@ -230,4 +230,4 @@ make db-restore FILE=backup.sql
 6. **Observable**: Health checks, logging, metrics, status monitoring
 7. **Secure**: Non-root execution, network isolation, minimal attack surface
 
-The Ordinaut can now be deployed with a single `docker compose up` command, providing a complete, production-ready AI agent coordination platform with bulletproof scheduling, reliable execution, and comprehensive observability.
+The task scheduling system can now be deployed with a single `docker compose up` command, providing a complete, production-ready enterprise task scheduling API with bulletproof scheduling, reliable execution, and comprehensive observability for MCP-enabled AI assistant integrations.

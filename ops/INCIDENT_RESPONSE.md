@@ -1,5 +1,5 @@
 # Incident Response Procedures
-## Ordinaut Production System
+## Enterprise Task Scheduling System
 
 ### Incident Response Team Structure
 - **Incident Commander**: Technical Lead (Primary on-call)
@@ -22,8 +22,8 @@
 | **P3 - Low** | 2 hours | 24 hours | Next business day |
 
 ### Critical (P0) Alerts - Immediate Response Required
-- `OrchestratorAPIDown` - API service unavailable
-- `OrchestratorDatabaseDown` - PostgreSQL connection failures
+- `TaskSchedulerAPIDown` - API service unavailable
+- `TaskSchedulerDatabaseDown` - PostgreSQL connection failures
 - `NoActiveWorkers` - All workers offline
 - `SecurityBreach` - Unauthorized access detected
 - `DataCorruption` - Database integrity violations
@@ -65,7 +65,7 @@ echo "$(date -Iseconds) [IC] P0 incident started: $(alert_name)" >> /var/log/inc
 
 ### Service-Specific Response Procedures
 
-#### API Service Down (`OrchestratorAPIDown`)
+#### API Service Down (`TaskSchedulerAPIDown`)
 ```bash
 # Diagnosis steps
 echo "=== API SERVICE INCIDENT RESPONSE ==="
@@ -111,7 +111,7 @@ if [ -n "$LAST_DEPLOYMENT_TIME" ] && [ $(($(date +%s) - LAST_DEPLOYMENT_TIME)) -
 fi
 ```
 
-#### Database Down (`OrchestratorDatabaseDown`)
+#### Database Down (`TaskSchedulerDatabaseDown`)
 ```bash
 # Database incident response
 echo "=== DATABASE INCIDENT RESPONSE ==="
@@ -230,7 +230,7 @@ netstat -tulpn | grep ESTABLISHED
 
 #### P0 Critical Incident Notification
 ```
-🚨 P0 CRITICAL INCIDENT - Ordinaut
+🚨 P0 CRITICAL INCIDENT - Task Scheduling System
 
 INCIDENT: [Alert name and brief description]
 STARTED: [ISO timestamp] 
@@ -249,7 +249,7 @@ Next update: [Time - typically 15 minutes]
 
 #### P1 High Priority Incident Notification
 ```
-⚠️  P1 HIGH PRIORITY - Ordinaut
+⚠️  P1 HIGH PRIORITY - Task Scheduling System
 
 INCIDENT: [Alert name]
 STARTED: [ISO timestamp]
@@ -267,7 +267,7 @@ Next update: [Time - typically 30 minutes]
 
 #### Resolution Notification Template
 ```
-✅ RESOLVED - Ordinaut Incident
+✅ RESOLVED - Task Scheduling System Incident
 
 INCIDENT: [Original alert name]
 DURATION: [Start time] to [End time] ([Duration])
@@ -319,7 +319,7 @@ Incident Commander: [Name]
 #!/bin/bash
 # health_check.sh - Comprehensive system health assessment
 
-echo "=== ORCHESTRATOR SYSTEM HEALTH CHECK ==="
+echo "=== TASK SCHEDULING SYSTEM HEALTH CHECK ==="
 echo "Timestamp: $(date -Iseconds)"
 
 # Container status

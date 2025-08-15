@@ -1,6 +1,6 @@
 # Instalare
 
-Ordinaut este conceput pentru a fi rulat ca un set de servicii containerizate folosind Docker. Această abordare asigură un mediu consistent și reproductibil atât pentru dezvoltare, cât și pentru producție.
+Ordinaut este un API backend de nivel enterprise pentru programarea sarcinilor, conceput pentru a fi rulat ca un set de servicii containerizate folosind Docker. Această abordare asigură un mediu consistent și reproductibil atât pentru dezvoltare, cât și pentru producție.
 
 **🚀 ACTUALIZAT:** Sunt disponibile imagini Docker pre-construite pentru implementare instantanee! Pentru cele mai recente instrucțiuni de instalare cu imagini GHCR, consultați [versiunea în engleză](installation.md) a acestui ghid.
 

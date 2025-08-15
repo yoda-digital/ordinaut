@@ -1,6 +1,6 @@
 # API-ul de Evenimente (Events)
 
-Ordinaut poate declanșa sarcini pe baza evenimentelor externe. API-ul de Evenimente este punctul de intrare pentru publicarea acestor evenimente în sistem.
+Backend-ul API Ordinaut poate declanșa sarcini pe baza evenimentelor externe, permițând asistenților AI să creeze workflow-uri reactive prin MCP. API-ul de Evenimente este punctul de intrare pentru publicarea acestor evenimente în sistem.
 
 ## `POST /events`
 

@@ -1,6 +1,6 @@
 # Ghid de Dezvoltare
 
-Acest ghid oferă instrucțiuni pentru configurarea unui mediu de dezvoltare local, rularea testelor și contribuirea la proiectul Ordinaut.
+Acest ghid oferă instrucțiuni pentru configurarea unui mediu de dezvoltare local, rularea testelor și contribuirea la backend-ul API Ordinaut pentru programarea sarcinilor.
 
 ## Configurare Mediu de Dezvoltare Local
 

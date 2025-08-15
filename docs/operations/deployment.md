@@ -1,6 +1,6 @@
 # Deployment
 
-This guide covers deploying the Ordinaut system to production environments using production-ready Docker images.
+This guide covers deploying the enterprise task scheduling system to production environments using production-ready Docker images.
 
 **🚀 Recommended:** Use pre-built images from GitHub Container Registry (GHCR) for reliable, security-tested production deployments.
 
@@ -30,9 +30,9 @@ cp .env.example .env
 - **Automatic updates** via GitHub Actions on every release
 
 **📚 Production Images Available:**
-- `ghcr.io/yoda-digital/ordinaut-api:latest` - FastAPI REST API service
-- `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - APScheduler service  
-- `ghcr.io/yoda-digital/ordinaut-worker:latest` - Job execution service
+- `ghcr.io/yoda-digital/task-scheduler-api:latest` - FastAPI REST API service
+- `ghcr.io/yoda-digital/task-scheduler-scheduler:latest` - APScheduler service  
+- `ghcr.io/yoda-digital/task-scheduler-worker:latest` - Job execution service
 
 ### 🛠️ **Option B: Custom Build (Advanced)**
 

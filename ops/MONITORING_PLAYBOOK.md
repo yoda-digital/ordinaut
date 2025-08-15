@@ -1,5 +1,5 @@
 # Monitoring Playbook
-## Ordinaut Alert Response Guide
+## Enterprise Task Scheduling System Alert Response Guide
 
 ### Alert Classification System
 - **Severity 0**: System down, data loss risk
@@ -11,7 +11,7 @@
 
 ## 1. CRITICAL ALERTS (SEVERITY 0) - IMMEDIATE RESPONSE
 
-### OrchestratorAPIDown
+### TaskSchedulerAPIDown
 **Trigger**: HTTP health check fails for >2 minutes  
 **Impact**: Complete service unavailability  
 **Response Time**: 5 minutes

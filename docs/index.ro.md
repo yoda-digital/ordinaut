@@ -10,9 +10,9 @@
 
 # Bun venit la Ordinaut
 
-**Orchestrator ușor, bazat pe evenimente, pentru agenți și pipeline-uri AI cu programare RRULE, stare persistentă, reîncercări și observabilitate completă.**
+**API backend de nivel enterprise pentru programarea sarcinilor cu suport RRULE, execuție pipeline și observabilitate completă.**
 
-Ordinaut oferă coloana vertebrală pentru agenții dumneavoastră AI, transformând asistenții deconectați într-un sistem coordonat, fiabil și observabil.
+Ordinaut este construit pentru a fi integrat cu asistenții AI prin Model Context Protocol (MCP), permițând gestionarea în limbaj natural a fluxurilor de lucru complexe și recurente prin interfețe de chat. Asistenții AI gestionează conversațiile, Ordinaut asigură execuția fiabilă.
 
 ## Noțiuni de Bază
 

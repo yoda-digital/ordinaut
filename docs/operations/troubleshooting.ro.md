@@ -1,6 +1,6 @@
 # Depanare (Troubleshooting)
 
-Acest ghid oferă soluții la problemele comune pe care le puteți întâmpina în timpul rulării Ordinaut.
+Acest ghid oferă soluții la problemele comune pe care le puteți întâmpina în timpul rulării backend-ului API Ordinaut pentru programarea sarcinilor.
 
 ## Listă de Verificare pentru Diagnostic
 

@@ -1,12 +1,12 @@
 # Security Audit Report - Ordinaut
 
 **Audit Date:** 2025-08-10  
-**Auditor:** Claude Security Specialist  
+**Auditor:** Security Specialist  
 **Scope:** Authentication, Authorization, Input Validation, and Security Middleware  
 
 ## Executive Summary
 
-The Ordinaut demonstrates a **comprehensive security architecture** with modern JWT authentication, extensive security middleware, and well-implemented input validation. However, several **critical production readiness issues** require immediate attention before deployment.
+The Ordinaut enterprise-grade task scheduling API backend, designed for AI assistant integrations via Model Context Protocol (MCP), demonstrates a **comprehensive security architecture** with modern JWT authentication, extensive security middleware, and well-implemented input validation. However, several **critical production readiness issues** require immediate attention before deployment.
 
 ### Overall Security Score: 7.5/10 🟡
 

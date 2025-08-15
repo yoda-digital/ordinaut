@@ -1,6 +1,6 @@
 # Installation
 
-Ordinaut is designed to be run as a set of containerized services using Docker. This approach ensures a consistent, reproducible environment for both development and production.
+The enterprise task scheduling system is designed to be run as a set of containerized services using Docker. This approach ensures a consistent, reproducible environment for both development and production.
 
 **🚀 Quick Installation:** Use our pre-built Docker images for instant deployment, or build from source for development and customization.
 
@@ -15,16 +15,16 @@ Before you begin, ensure you have the following tools installed on your system:
 
 ## 1. Clone the Repository
 
-First, clone the Ordinaut repository from GitHub to your local machine.
+First, clone the task scheduling system repository from GitHub to your local machine.
 
 ```bash
-git clone https://github.com/yoda-digital/ordinaut.git
-cd ordinaut
+git clone https://github.com/yoda-digital/task-scheduler.git
+cd task-scheduler
 ```
 
 ## 2. Start the System
 
-Ordinaut provides two installation approaches - choose the one that fits your needs:
+The task scheduling system provides two installation approaches - choose the one that fits your needs:
 
 ### 🚀 **Option A: Pre-built Images (RECOMMENDED - Instant Start)**
 
@@ -43,9 +43,9 @@ cd ops/
 - **No build dependencies** required on your system
 
 **📚 Available Images:**
-- `ghcr.io/yoda-digital/ordinaut-api:latest` - FastAPI REST API service
-- `ghcr.io/yoda-digital/ordinaut-scheduler:latest` - APScheduler service  
-- `ghcr.io/yoda-digital/ordinaut-worker:latest` - Job execution service
+- `ghcr.io/yoda-digital/task-scheduler-api:latest` - FastAPI REST API service
+- `ghcr.io/yoda-digital/task-scheduler-scheduler:latest` - APScheduler service  
+- `ghcr.io/yoda-digital/task-scheduler-worker:latest` - Job execution service
 
 ### 🛠️ **Option B: Build from Source (Development)**
 

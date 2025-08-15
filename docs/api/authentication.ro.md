@@ -1,6 +1,6 @@
 # Autentificare
 
-Toate punctele finale ale API-ului (cu excepția verificărilor publice de sănătate) necesită autentificare bazată pe Agent folosind un **Token Bearer**.
+Toate punctele finale ale API-ului (cu excepția verificărilor publice de sănătate) necesită autentificare bazată pe Agent folosind un **Token Bearer**. Asistenții AI se conectează prin MCP folosind aceste token-uri.
 
 ## Autentificare cu Token Bearer
 
@@ -8,7 +8,7 @@ Trebuie să includeți un antet `Authorization` cu token-ul agentului dumneavoas
 
 ```bash
 curl -H "Authorization: Bearer 00000000-0000-0000-0000-000000000001" \
-     https://api.orchestrator.example.com/v1/tasks
+     https://api.ordinaut.example.com/v1/tasks
 ```
 
 ## Scopurile și Permisiunile Agentului

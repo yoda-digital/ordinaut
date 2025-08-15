@@ -6,7 +6,7 @@
 
 ### Agent
 
-Un **Agent** este un actor în sistem, identificat printr-un ID unic (UUID) și un token de autentificare. Agenții sunt proprietarii sarcinilor și inițiatorii acțiunilor. Puteți crea agenți diferiți pentru roluri diferite (de exemplu, un `agent-de-raportare`, un `agent-de-procesare-date`) și le puteți acorda permisiuni specifice (scopuri) pentru a controla ce li se permite să facă.
+Un **Agent** este un actor în sistem, identificat printr-un ID unic (UUID) și un token de autentificare. Agenții sunt de obicei asistenți AI (ChatGPT, Claude, Copilot) care se conectează prin Model Context Protocol (MCP) pentru a crea și gestiona sarcini în numele utilizatorilor. Fiecare agent are permisiuni specifice (scopuri) pentru a controla ce operații sunt permise.
 
 ---
 

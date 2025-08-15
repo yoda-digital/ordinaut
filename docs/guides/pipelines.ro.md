@@ -1,6 +1,6 @@
 # Pipeline-uri și Instrumente
 
-Puterea Ordinaut provine din motorul său declarativ de pipeline, care execută o serie de pași într-un mod previzibil și fiabil.
+Puterea backend-ului API Ordinaut provine din motorul său declarativ de pipeline, care execută o serie de pași într-un mod previzibil și fiabil pentru sarcinile create de asistenții AI prin MCP.
 
 ## Structura Pipeline-ului
 

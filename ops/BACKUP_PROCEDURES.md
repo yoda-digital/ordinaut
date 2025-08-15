@@ -1,5 +1,5 @@
 # Backup Procedures
-## Ordinaut Data Protection
+## Enterprise Task Scheduling System Data Protection
 
 ### Backup Strategy Overview
 - **PostgreSQL**: Full daily backups + WAL-E continuous archiving
@@ -23,7 +23,7 @@ mkdir -p /backups/postgres/archive
 chown -R 999:999 /backups/postgres/  # PostgreSQL user in container
 
 # 2. Configure PostgreSQL for WAL archiving
-cat >> /var/lib/docker/volumes/ordinaut_pgdata/_data/postgresql.conf << EOF
+cat >> /var/lib/docker/volumes/task_scheduler_pgdata/_data/postgresql.conf << EOF
 
 # WAL archiving configuration
 wal_level = replica
@@ -60,11 +60,11 @@ RETENTION_DAYS=30
 
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-echo "=== ORCHESTRATOR DAILY BACKUP STARTED: $(date) ==="
+echo "=== TASK SCHEDULER DAILY BACKUP STARTED: $(date) ==="
 
 # 1. PostgreSQL Full Backup
 echo "### PostgreSQL Backup ###"
-POSTGRES_BACKUP_FILE="/backups/postgres/daily/orchestrator_${BACKUP_DATE}.sql"
+POSTGRES_BACKUP_FILE="/backups/postgres/daily/task_scheduler_${BACKUP_DATE}.sql"
 
 if docker exec postgres pg_dump -U orchestrator -v orchestrator > "$POSTGRES_BACKUP_FILE"; then
   echo "✅ PostgreSQL backup completed: $POSTGRES_BACKUP_FILE"
@@ -122,7 +122,7 @@ fi
 
 # 3. Configuration Backup
 echo -e "\n### Configuration Backup ###"
-CONFIG_BACKUP_FILE="/backups/config/orchestrator_config_${BACKUP_DATE}.tar.gz"
+CONFIG_BACKUP_FILE="/backups/config/task_scheduler_config_${BACKUP_DATE}.tar.gz"
 
 if tar czf "$CONFIG_BACKUP_FILE" \
   ops/docker-compose*.yml \
@@ -144,7 +144,7 @@ fi
 
 # 4. Application Code Backup (Git repository)
 echo -e "\n### Application Code Backup ###"
-CODE_BACKUP_FILE="/backups/code/orchestrator_code_${BACKUP_DATE}.tar.gz"
+CODE_BACKUP_FILE="/backups/code/task_scheduler_code_${BACKUP_DATE}.tar.gz"
 
 if tar czf "$CODE_BACKUP_FILE" \
   --exclude='.git' \
@@ -208,11 +208,11 @@ echo "Total backup storage used: $TOTAL_BACKUP_SIZE"
 echo "Backup files created today:"
 find /backups/ -name "*${BACKUP_DATE%_*}*" -type f -exec ls -lh {} \;
 
-echo "=== ORCHESTRATOR DAILY BACKUP COMPLETED: $(date) ==="
+echo "=== TASK SCHEDULER DAILY BACKUP COMPLETED: $(date) ==="
 
 # Send backup report (if configured)
 if [ -n "$BACKUP_REPORT_EMAIL" ]; then
-  mail -s "Orchestrator Backup Report - $(date +%Y-%m-%d)" "$BACKUP_REPORT_EMAIL" < "$LOG_FILE"
+  mail -s "Task Scheduler Backup Report - $(date +%Y-%m-%d)" "$BACKUP_REPORT_EMAIL" < "$LOG_FILE"
 fi
 ```
 
@@ -279,8 +279,8 @@ tar czf "$BACKUP_DIR/complete_config.tar.gz" \
 
 # 7. Docker volumes backup
 echo "Backing up Docker volumes..."
-docker run --rm -v ordinaut_pgdata:/data -v "$BACKUP_DIR":/backup busybox tar czf /backup/pgdata_volume.tar.gz -C /data .
-docker run --rm -v ordinaut_redisdata:/data -v "$BACKUP_DIR":/backup busybox tar czf /backup/redisdata_volume.tar.gz -C /data .
+docker run --rm -v task_scheduler_pgdata:/data -v "$BACKUP_DIR":/backup busybox tar czf /backup/pgdata_volume.tar.gz -C /data .
+docker run --rm -v task_scheduler_redisdata:/data -v "$BACKUP_DIR":/backup busybox tar czf /backup/redisdata_volume.tar.gz -C /data .
 
 # 8. System state capture
 echo "Capturing system state..."
@@ -311,7 +311,7 @@ echo "Total backup size: $(du -sh $BACKUP_DIR | cut -f1)"
 # quick_db_export.sh - Fast database export without service interruption
 
 EXPORT_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-EXPORT_FILE="/tmp/orchestrator_export_${EXPORT_TIMESTAMP}.sql"
+EXPORT_FILE="/tmp/task_scheduler_export_${EXPORT_TIMESTAMP}.sql"
 
 echo "Creating quick database export..."
 
@@ -684,7 +684,7 @@ echo "PITR setup completed"
 # setup_offsite_backup.sh - Configure off-site backup replication
 
 REMOTE_HOST=${1:-"backup-server.example.com"}
-REMOTE_PATH=${2:-"/backups/orchestrator"}
+REMOTE_PATH=${2:-"/backups/task_scheduler"}
 BACKUP_KEY=${3:-"~/.ssh/backup_key"}
 
 echo "Setting up off-site backup replication to $REMOTE_HOST:$REMOTE_PATH"

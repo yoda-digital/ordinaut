@@ -1,5 +1,5 @@
 # Production Runbook
-## Ordinaut Daily Operations
+## Enterprise Task Scheduling System Daily Operations
 
 ### System Overview
 - **Environment**: Production
@@ -17,7 +17,7 @@
 #!/bin/bash
 # daily_health_check.sh - Comprehensive morning system verification
 
-echo "=== ORCHESTRATOR DAILY HEALTH CHECK - $(date) ==="
+echo "=== TASK SCHEDULING SYSTEM DAILY HEALTH CHECK - $(date) ==="
 
 # 1. System Status Overview
 echo -e "\n### CONTAINER STATUS ###"

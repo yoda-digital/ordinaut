@@ -1,6 +1,6 @@
 # Referință API
 
-API-ul REST Ordinaut este interfața principală pentru agenți și sisteme externe pentru a interacționa cu orchestratorul. API-ul este construit cu FastAPI și oferă documentație interactivă automată.
+API-ul REST Ordinaut este interfața principală pentru asistenții AI și sisteme externe pentru a interacționa cu backend-ul de programare a sarcinilor prin MCP. API-ul este construit cu FastAPI și oferă documentație interactivă automată.
 
 ## Documentație Interactivă
 

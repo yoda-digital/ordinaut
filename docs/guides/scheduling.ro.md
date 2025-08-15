@@ -1,6 +1,6 @@
 # Programare cu RRULE
 
-Ordinaut utilizează standardul puternic **RFC 5545 Recurrence Rule (RRULE)** pentru toate programările complexe, conștiente de calendar. Acest lucru vă permite să definiți programe sofisticate care depășesc cu mult ceea ce pot suporta expresiile cron tradiționale.
+Ordinaut, ca backend API pentru programarea sarcinilor, utilizează standardul puternic **RFC 5545 Recurrence Rule (RRULE)** pentru toate programările complexe, conștiente de calendar. Acest lucru permite asistenților AI să definească programe sofisticate prin MCP care depășesc cu mult ceea ce pot suporta expresiile cron tradiționale.
 
 Când creați o sarcină, setați `schedule_kind` la `rrule` și furnizați șirul regulii în `schedule_expr`.
 

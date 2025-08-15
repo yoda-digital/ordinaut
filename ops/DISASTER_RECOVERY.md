@@ -1,5 +1,5 @@
 # Disaster Recovery Procedures
-## Ordinaut Production System
+## Enterprise Task Scheduling System
 
 ### Recovery Time Objective (RTO): 30 minutes
 ### Recovery Point Objective (RPO): 5 minutes
@@ -12,7 +12,7 @@
 ```bash
 # Step 1: Assess system status
 ./ops/health-check.sh --full-system
-docker ps -a | grep orchestrator
+docker ps -a | grep -E "(api|scheduler|worker|postgres|redis)"
 docker-compose -f ops/docker-compose.observability.yml ps
 
 # Step 2: Check data integrity
@@ -49,7 +49,7 @@ cd /recovery/postgres/$(date +%Y%m%d_%H%M%S)
 docker-compose -f ops/docker-compose.yml stop postgres
 
 # Backup current data (if accessible)
-docker run --rm -v ordinaut_pgdata:/source -v $(pwd):/backup \
+docker run --rm -v task_scheduler_pgdata:/source -v $(pwd):/backup \
   busybox tar czf /backup/current_data_backup.tar.gz -C /source .
 
 # Restore from latest backup
@@ -57,12 +57,12 @@ LATEST_BACKUP=$(ls -1t /backups/postgres/ | head -1)
 echo "Restoring from: $LATEST_BACKUP"
 
 # Remove corrupted data volume
-docker volume rm ordinaut_pgdata
-docker volume create ordinaut_pgdata
+docker volume rm task_scheduler_pgdata
+docker volume create task_scheduler_pgdata
 
 # Restore backup data
 docker run --rm -v $(pwd)/backups/postgres/$LATEST_BACKUP:/backup \
-  -v ordinaut_pgdata:/target busybox tar xzf /backup -C /target
+  -v task_scheduler_pgdata:/target busybox tar xzf /backup -C /target
 
 # Start PostgreSQL
 docker-compose -f ops/docker-compose.yml up -d postgres
@@ -115,19 +115,19 @@ recovery_target_action = 'promote'
 EOF
 
 # Restore base backup and apply WAL logs
-docker volume rm ordinaut_pgdata
-docker volume create ordinaut_pgdata
+docker volume rm task_scheduler_pgdata
+docker volume create task_scheduler_pgdata
 
 # Restore base backup (find closest backup before target time)
 BASE_BACKUP=$(ls -1 /backups/postgres/base/ | \
   awk -v target="$RECOVERY_TARGET" '$0 <= target' | tail -1)
 
 docker run --rm -v /backups/postgres/base/$BASE_BACKUP:/backup \
-  -v ordinaut_pgdata:/target busybox tar xzf /backup -C /target
+  -v task_scheduler_pgdata:/target busybox tar xzf /backup -C /target
 
 # Copy recovery configuration
 docker run --rm -v $(pwd)/recovery.conf:/recovery.conf \
-  -v ordinaut_pgdata:/target busybox cp /recovery.conf /target/
+  -v task_scheduler_pgdata:/target busybox cp /recovery.conf /target/
 
 # Start PostgreSQL in recovery mode
 docker-compose -f ops/docker-compose.yml up -d postgres
@@ -156,14 +156,14 @@ docker-compose -f ops/docker-compose.yml stop redis
 
 # Restore from backup
 LATEST_REDIS_BACKUP=$(ls -1t /backups/redis/ | head -1)
-docker volume rm ordinaut_redisdata
-docker volume create ordinaut_redisdata
+docker volume rm task_scheduler_redisdata
+docker volume create task_scheduler_redisdata
 
 docker run --rm -v /backups/redis/$LATEST_REDIS_BACKUP:/backup \
-  -v ordinaut_redisdata:/target busybox cp /backup /target/dump.rdb
+  -v task_scheduler_redisdata:/target busybox cp /backup /target/dump.rdb
 
 # Set proper permissions
-docker run --rm -v ordinaut_redisdata:/target busybox chown 999:999 /target/dump.rdb
+docker run --rm -v task_scheduler_redisdata:/target busybox chown 999:999 /target/dump.rdb
 
 # Start Redis
 docker-compose -f ops/docker-compose.yml up -d redis
@@ -342,7 +342,7 @@ curl -s http://localhost:9093/api/v1/alerts | \
 ### Performance Baseline Recovery
 ```bash
 # Load baseline performance test
-docker run --rm --network ordinaut_ordinaut-network \
+docker run --rm --network task_scheduler_network \
   -v $(pwd)/tests/load:/tests \
   python:3.12-slim python /tests/recovery_validation.py
 
@@ -403,7 +403,7 @@ docker run --rm --network ordinaut_ordinaut-network \
 
 ### Incident Communication Template
 ```
-INCIDENT: Ordinaut Service Disruption
+INCIDENT: Task Scheduling System Service Disruption
 SEVERITY: [Critical/High/Medium/Low]
 START TIME: [ISO timestamp]
 IMPACT: [Description of user impact]

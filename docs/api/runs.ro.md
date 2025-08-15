@@ -1,6 +1,6 @@
 # API-ul de Rulări (Runs)
 
-API-ul de Rulări vă permite să monitorizați istoricul de execuție al sarcinilor dumneavoastră.
+API-ul de Rulări permite asistenților AI să monitorizeze istoricul de execuție al sarcinilor create prin MCP.
 
 ## `GET /runs`
 

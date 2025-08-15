@@ -1,8 +1,8 @@
-# Ordinaut - Security Implementation
+# Task Scheduling System - Security Implementation
 
 ## Overview
 
-The Ordinaut includes comprehensive security infrastructure designed for production deployment with JWT authentication, rate limiting, threat detection, and audit logging.
+The enterprise task scheduling system includes comprehensive security infrastructure designed for production deployment with JWT authentication, rate limiting, threat detection, and audit logging. This system serves as the backend for AI assistant integrations via Model Context Protocol (MCP).
 
 ## Security Features
 
