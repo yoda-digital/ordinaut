@@ -29,6 +29,7 @@ theme:
 
 plugins:
   - search
+  - panzoom
   - i18n:
       docs_structure: suffix
       reconfigure_material: true
