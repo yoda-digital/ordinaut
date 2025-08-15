@@ -12,4 +12,4 @@ Main components:
 - dependencies: Reusable dependencies for database and authentication
 """
 
-__version__ = "1.10.1"
+__version__ = "1.10.2"
