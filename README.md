@@ -6,11 +6,11 @@
   </picture>
   
   <p>
-    <strong>Enterprise-grade task scheduling API with RRULE support, pipeline execution, and comprehensive observability. Purpose-built as the backend for AI assistant integrations via Model Context Protocol (MCP).</strong>
+    <strong>Enterprise-grade pure task scheduling API with RRULE support, pipeline execution, and comprehensive observability. Designed as a clean foundation for extension development with MCP and tool integrations implemented as separate services.</strong>
   </p>
   
   <p>
-    Enable natural language management of complex recurring workflows through chat interfaces. AI assistants handle conversation, the system handles reliable execution.
+    ⚡ <strong>PURE TASK SCHEDULER</strong> - Clean foundation ready for extension development. MCP integration and tool execution will be implemented as separate extension services that communicate via REST APIs.
   </p>
   
   <p>
@@ -86,27 +86,40 @@ docker pull ghcr.io/yoda-digital/task-scheduler-worker:latest
 
 ## Architecture Overview
 
-The system implements a **proven architecture** for MCP-integrated task execution:
+The system implements a **clean extension architecture** with a pure task scheduler core:
 
 ```
-┌─────────────┐    ┌──────────────┐    ┌────────────────┐    ┌─────────────────┐
-│ AI Assistant│───▶│   MCP Server │───▶│   FastAPI      │───▶│   PostgreSQL    │
-│(Claude/GPT) │    │  (Natural    │    │  (REST API)    │    │ (Durable Store) │
-│             │    │  Language)   │    │                │    │                 │
-└─────────────┘    └──────────────┘    └────────────────┘    └─────────────────┘
-                           │                      │                      │
-                           ▼                      ▼                      ▼
-┌─────────────┐    ┌──────────────┐    ┌────────────────┐    ┌─────────────────┐
-│External APIs│◀───│   Pipeline   │◀───│   Workers      │◀───│   APScheduler   │
-│(Tools)      │    │  (Executor)  │    │(SKIP LOCKED)   │    │  (Time Logic)   │
-└─────────────┘    └──────────────┘    └────────────────┘    └─────────────────┘
-                           ▲                      │
-                           │                      ▼
-                   ┌──────────────┐    ┌────────────────┐
-                   │Redis Streams │    │  Observability │
-                   │  (Events)    │    │(Prometheus +   │
-                   │              │    │ Grafana)       │
-                   └──────────────┘    └────────────────┘
+🔄 CURRENT STATE: Pure Task Scheduler
+┌─────────────────┐    ┌────────────────┐    ┌─────────────────┐
+│   FastAPI       │───▶│   PostgreSQL    │◀───│   APScheduler   │
+│  (REST API)     │    │ (Durable Store) │    │  (Time Logic)   │
+│                 │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                      ▲                      │
+         ▼                      │                      ▼
+┌─────────────────┐    ┌────────────────┐    ┌─────────────────┐
+│   Workers       │───▶│   Pipeline     │◀───│Redis Streams    │
+│(SKIP LOCKED)    │    │  (Simulator)   │    │  (Events)       │
+└─────────────────┘    └────────────────┘    └─────────────────┘
+                               │
+                               ▼
+                   ┌────────────────┐
+                   │  Observability │
+                   │(Prometheus +   │
+                   │ Grafana)       │
+                   └────────────────┘
+
+🚀 FUTURE EXTENSIONS: (To be implemented separately)
+┌─────────────┐    ┌──────────────┐    ┌─────────────────┐
+│ AI Assistant│───▶│   MCP Server │───▶│ Ordinaut Core   │
+│(Claude/GPT) │    │  Extension   │    │ (REST APIs)     │
+└─────────────┘    └──────────────┘    └─────────────────┘
+        │                    │                    ▲
+        ▼                    ▼                    │
+┌─────────────┐    ┌──────────────┐              │
+│   Tools     │    │   Web GUI    │              │
+│ Extension   │    │  Extension   │              │
+└─────────────┘    └──────────────┘──────────────┘
 ```
 
 ### Core Components
@@ -116,8 +129,8 @@ The system implements a **proven architecture** for MCP-integrated task executio
 3. **Redis Streams** - Ordered, durable event logs with consumer groups (`XADD`/`XREADGROUP`)
 4. **FastAPI Service** - Modern REST API with automatic OpenAPI documentation
 5. **Worker Pool** - Distributed job processors using safe work leasing patterns
-6. **Pipeline Engine** - Deterministic pipeline execution with template rendering
-7. **MCP Integration Layer** - Ready for Model Context Protocol bridge development
+6. **Pipeline Engine** - Deterministic pipeline execution with template rendering (tool simulation)
+7. **Extension Architecture** - Clean REST APIs ready for MCP and tool integration development
 
 ## Key Features
 
@@ -139,8 +152,8 @@ The system implements a **proven architecture** for MCP-integrated task executio
 - **Declarative pipelines** with step-by-step execution
 - **Template variables**: `${steps.weather.summary}`, `${params.user_id}`
 - **Conditional steps**: JMESPath expressions for flow control
-- **Schema validation**: JSON Schema for all tool inputs and outputs
-- **Tool catalog**: Centralized registry of available MCP tools
+- **Schema validation**: JSON Schema framework ready for extensions
+- **Tool simulation**: All tool calls simulated with proper context structure
 
 ### 🛡️ **Security & Governance**
 - **Agent-based authentication** with scope-based authorization
@@ -157,7 +170,9 @@ The system implements a **proven architecture** for MCP-integrated task executio
 
 ## Example Use Cases
 
-### Morning Briefing Pipeline
+**⚡ IMPORTANT**: The examples below show pipeline *structure* processing. All tool calls (google-calendar-mcp, weather-mcp, etc.) are currently **SIMULATED** by the core system. Real tool execution will be implemented as extensions that communicate with the scheduler via REST APIs.
+
+### Morning Briefing Pipeline (Template Structure)
 ```json
 {
   "title": "Weekday Morning Briefing",
@@ -202,7 +217,9 @@ The system implements a **proven architecture** for MCP-integrated task executio
 }
 ```
 
-### Email Follow-up Automation
+**Note**: When executed, this pipeline processes the structure, resolves templates (`${steps.events}`, `${steps.weather}`), evaluates conditions, and simulates all tool calls with proper logging. Extensions will implement the actual integrations (google-calendar-mcp, weather-mcp, llm.plan, telegram-mcp.send_message).
+
+### Email Follow-up Automation (Template Structure)
 ```json
 {
   "title": "Email Follow-up Manager",
@@ -246,6 +263,8 @@ The system implements a **proven architecture** for MCP-integrated task executio
 }
 ```
 
+**Note**: This pipeline demonstrates complex conditional logic (`if` expressions), approval workflows, and multi-step processing. All tool calls (imap-mcp, llm.generate_followups, gmail-mcp) are simulated. Extensions will implement real email processing, LLM integration, and approval systems.
+
 ## Technology Stack
 
 ### Core Infrastructure
@@ -258,14 +277,14 @@ The system implements a **proven architecture** for MCP-integrated task executio
 ### Specialized Libraries
 - **python-dateutil** - RFC-5545 RRULE processing for complex recurring schedules
 - **JMESPath** - JSON querying for conditional logic and data selection
-- **JSON Schema** - Strict validation for all tool inputs/outputs
-- **Model Context Protocol (MCP)** - Standard interface for agent integration
+- **JSON Schema** - Validation framework (ready for extension development)
+- **Extension Framework** - Clean architecture for MCP and tool integration
 
 ### Why These Choices
 - APScheduler + SQLAlchemy + PostgreSQL is explicitly recommended by APScheduler maintainers
 - `FOR UPDATE SKIP LOCKED` is the canonical PostgreSQL pattern for safe job distribution
 - Redis Streams designed for ordered, durable event logs with consumer groups
-- MCP enables AI assistants to manage complex scheduling through natural language
+- Clean extension architecture enables modular development of MCP and tool integrations
 
 ## API Overview
 
@@ -328,4 +347,6 @@ See [LICENSE](LICENSE) for details.
 
 ---
 
-**Enable AI assistants to manage complex automation through natural conversation.** Start with the [Quick Start](docs/getting-started/quick-start.md) guide and have your scheduling backend running in 5 minutes.
+**\ud83d\ude80 Pure Task Scheduler Foundation - Ready for Extension Development**
+
+The Ordinaut core provides bulletproof scheduling, pipeline processing, and observability. Start with the [Quick Start](#quick-start) guide and have your pure scheduler running in 5 minutes. MCP integration and tool execution will be added as separate extension services.

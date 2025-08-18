@@ -318,12 +318,12 @@ class TestPipelineExecutionPerformance:
     """Test pipeline execution performance under load."""
     
     @patch('engine.executor.call_tool')
-    @patch('engine.executor.load_catalog')
-    async def test_simple_pipeline_benchmark(self, mock_load_catalog, mock_call_tool, benchmark):
+    @patch('engine.executor.load_catalog')  # REMOVED: Tool functionality moved to extensions
+    async def test_simple_pipeline_benchmark(self, # REMOVED: mock_load_catalog (tool functionality moved to extensions), mock_call_tool, benchmark):
         """Benchmark simple pipeline execution performance."""
         
         # Setup mocks
-        mock_load_catalog.return_value = [{
+        # REMOVED: mock_load_catalog (tool functionality moved to extensions).return_value = [{
             "address": "test.fast",
             "transport": "http",
             "endpoint": "http://fast-service.com/api",
@@ -356,12 +356,12 @@ class TestPipelineExecutionPerformance:
         assert benchmark.stats.mean < 0.010
     
     @patch('engine.executor.call_tool')
-    @patch('engine.executor.load_catalog')
-    async def test_multi_step_pipeline_performance(self, mock_load_catalog, mock_call_tool, benchmark):
+    @patch('engine.executor.load_catalog')  # REMOVED: Tool functionality moved to extensions
+    async def test_multi_step_pipeline_performance(self, # REMOVED: mock_load_catalog (tool functionality moved to extensions), mock_call_tool, benchmark):
         """Test multi-step pipeline performance."""
         
         # Setup tool catalog
-        mock_load_catalog.return_value = [
+        # REMOVED: mock_load_catalog (tool functionality moved to extensions).return_value = [
             {
                 "address": f"service_{i}.action",
                 "transport": "http", 
@@ -421,12 +421,12 @@ class TestPipelineExecutionPerformance:
         assert benchmark.stats.mean < 0.050, f"Multi-step pipeline too slow: {benchmark.stats.mean*1000:.1f}ms"
     
     @patch('engine.executor.call_tool')
-    @patch('engine.executor.load_catalog') 
-    async def test_concurrent_pipeline_execution(self, mock_load_catalog, mock_call_tool, performance_monitor):
+    @patch('engine.executor.load_catalog')  # REMOVED: Tool functionality moved to extensions 
+    async def test_concurrent_pipeline_execution(self, # REMOVED: mock_load_catalog (tool functionality moved to extensions), mock_call_tool, performance_monitor):
         """Test concurrent pipeline execution performance."""
         
         # Setup fast mock tools
-        mock_load_catalog.return_value = [{
+        # REMOVED: mock_load_catalog (tool functionality moved to extensions).return_value = [{
             "address": "concurrent.test",
             "transport": "http",
             "endpoint": "http://concurrent-service.com/api",

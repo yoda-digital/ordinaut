@@ -755,7 +755,7 @@ Workers coordinate with the MCP (Model Context Protocol) system for tool executi
 ```python
 # Engine integration handles MCP tool calls
 def execute_pipeline_step(step, context):
-    tool = get_tool(step["uses"])
+    tool = # REMOVED: get_tool(step["uses"])
     
     # Render templates: ${steps.x.y}, ${params.z}
     args = render_templates(step.get("with", {}), context)

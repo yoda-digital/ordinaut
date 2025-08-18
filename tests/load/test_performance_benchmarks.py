@@ -105,7 +105,7 @@ class TestHighVolumeTaskProcessing:
             start_time = time.time()
             local_processed = []
             
-            with patch('engine.executor.load_catalog') as mock_catalog:
+            # REMOVED: with patch('engine.executor.load_catalog') - tool functionality moved to extensions as mock_catalog:
                 mock_catalog.return_value = [
                     {
                         "address": "test-tool.execute",
@@ -282,7 +282,7 @@ class TestHighVolumeTaskProcessing:
             start_time = time.time()
             local_processed = 0
             
-            with patch('engine.executor.load_catalog') as mock_catalog:
+            # REMOVED: with patch('engine.executor.load_catalog') - tool functionality moved to extensions as mock_catalog:
                 mock_catalog.return_value = [
                     {
                         "address": "test-tool.execute",
@@ -860,7 +860,7 @@ class TestMemoryAndResourceManagement:
             })
             worker = WorkerRunner(config)
             
-            with patch('engine.executor.load_catalog') as mock_catalog:
+            # REMOVED: with patch('engine.executor.load_catalog') - tool functionality moved to extensions as mock_catalog:
                 mock_catalog.return_value = [{
                     "address": "test-tool.execute",
                     "input_schema": {"type": "object"},
@@ -1039,7 +1039,7 @@ class TestSLACompliance:
         crash_worker = WorkerRunner(config)
         
         # Process some tasks, then simulate crash
-        with patch('engine.executor.load_catalog') as mock_catalog:
+        # REMOVED: with patch('engine.executor.load_catalog') - tool functionality moved to extensions as mock_catalog:
             mock_catalog.return_value = [{
                 "address": "test-tool.execute",
                 "input_schema": {"type": "object"},
@@ -1079,7 +1079,7 @@ class TestSLACompliance:
         # Clean up expired leases
         recovery_worker.cleanup_expired_leases()
         
-        with patch('engine.executor.load_catalog') as mock_catalog:
+        # REMOVED: with patch('engine.executor.load_catalog') - tool functionality moved to extensions as mock_catalog:
             mock_catalog.return_value = [{
                 "address": "test-tool.execute",
                 "input_schema": {"type": "object"},
@@ -1202,7 +1202,7 @@ class TestSLACompliance:
             })
             worker = WorkerRunner(config)
             
-            with patch('engine.executor.load_catalog') as mock_catalog:
+            # REMOVED: with patch('engine.executor.load_catalog') - tool functionality moved to extensions as mock_catalog:
                 mock_catalog.return_value = [{
                     "address": "test-tool.execute",
                     "input_schema": {"type": "object"},

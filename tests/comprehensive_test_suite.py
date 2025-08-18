@@ -8,7 +8,7 @@ without requiring external dependencies like Docker. It includes:
 - Template rendering validation (fixed)
 - RRULE processing with DST scenarios
 - Worker concurrency and SKIP LOCKED behavior simulation  
-- Pipeline execution with mocked tools
+- Pipeline execution with tool simulation (tools removed from core)
 - Performance benchmarks
 - Chaos engineering tests
 - End-to-end workflow simulation
@@ -502,15 +502,21 @@ class TestWorkerConcurrencySimulation:
         assert successful_runs == len(task_ids)
 
 
+@pytest.mark.skip(reason="Tool execution functionality removed from core system (August 2025)")
 class TestPipelineExecutionMocked:
-    """Test pipeline execution with mocked tools."""
+    """DISABLED: Test pipeline execution with mocked tools.
+    
+    ⚠️  DISABLED (August 2025) - Tool catalog and real tool execution removed.
+    Current system simulates all tool calls. Extensions will implement real tools.
+    """
     
     @patch('engine.executor.call_tool')
-    @patch('engine.executor.load_catalog')  
-    async def test_simple_pipeline_execution(self, mock_load_catalog, mock_call_tool, mock_tool_catalog):
+    # DISABLED: Tool catalog functionality removed (August 2025)
+    # @patch('engine.executor.load_catalog')  # REMOVED: Tool functionality moved to extensions  
+    # async def test_simple_pipeline_execution(self, # REMOVED: mock_load_catalog (tool functionality moved to extensions), mock_call_tool, mock_tool_catalog):
         """Test simple pipeline execution with mocked tools."""
         
-        mock_load_catalog.return_value = mock_tool_catalog
+        # REMOVED: mock_load_catalog (tool functionality moved to extensions).return_value = mock_tool_catalog
         mock_call_tool.return_value = {"result": "Hello World"}
         
         pipeline = {
@@ -537,11 +543,11 @@ class TestPipelineExecutionMocked:
         assert call_args[0][2]["message"] == "Hello World"  # Template was rendered
     
     @patch('engine.executor.call_tool')
-    @patch('engine.executor.load_catalog')
-    async def test_multi_step_pipeline(self, mock_load_catalog, mock_call_tool, mock_tool_catalog):
+    @patch('engine.executor.load_catalog')  # REMOVED: Tool functionality moved to extensions
+    async def test_multi_step_pipeline(self, # REMOVED: mock_load_catalog (tool functionality moved to extensions), mock_call_tool, mock_tool_catalog):
         """Test multi-step pipeline with data flow between steps."""
         
-        mock_load_catalog.return_value = mock_tool_catalog
+        # REMOVED: mock_load_catalog (tool functionality moved to extensions).return_value = mock_tool_catalog
         
         # Mock different responses for different steps
         mock_call_tool.side_effect = [
@@ -578,11 +584,11 @@ class TestPipelineExecutionMocked:
         assert second_call_args[0][2]["message"] == "Hello Alice"
     
     @patch('engine.executor.call_tool')
-    @patch('engine.executor.load_catalog')
-    async def test_pipeline_error_handling(self, mock_load_catalog, mock_call_tool, mock_tool_catalog):
+    @patch('engine.executor.load_catalog')  # REMOVED: Tool functionality moved to extensions
+    async def test_pipeline_error_handling(self, # REMOVED: mock_load_catalog (tool functionality moved to extensions), mock_call_tool, mock_tool_catalog):
         """Test pipeline error handling and retry logic."""
         
-        mock_load_catalog.return_value = mock_tool_catalog
+        # REMOVED: mock_load_catalog (tool functionality moved to extensions).return_value = mock_tool_catalog
         mock_call_tool.side_effect = Exception("Tool execution failed")
         
         pipeline = {
@@ -681,11 +687,11 @@ class TestChaosEngineeringSimulation:
     """Test chaos engineering scenarios with simulated failures."""
     
     @patch('engine.executor.call_tool')
-    @patch('engine.executor.load_catalog')
-    async def test_tool_failure_recovery(self, mock_load_catalog, mock_call_tool, mock_tool_catalog):
+    @patch('engine.executor.load_catalog')  # REMOVED: Tool functionality moved to extensions
+    async def test_tool_failure_recovery(self, # REMOVED: mock_load_catalog (tool functionality moved to extensions), mock_call_tool, mock_tool_catalog):
         """Test recovery from tool failures."""
         
-        mock_load_catalog.return_value = mock_tool_catalog
+        # REMOVED: mock_load_catalog (tool functionality moved to extensions).return_value = mock_tool_catalog
         
         # Simulate intermittent failures
         mock_call_tool.side_effect = [
@@ -801,8 +807,8 @@ class TestEndToEndWorkflowSimulation:
     """Test complete end-to-end workflows with mocked components."""
     
     @patch('engine.executor.call_tool')
-    @patch('engine.executor.load_catalog') 
-    async def test_morning_briefing_workflow(self, mock_load_catalog, mock_call_tool, mock_db, sample_agent):
+    @patch('engine.executor.load_catalog')  # REMOVED: Tool functionality moved to extensions 
+    async def test_morning_briefing_workflow(self, # REMOVED: mock_load_catalog (tool functionality moved to extensions), mock_call_tool, mock_db, sample_agent):
         """Test complete morning briefing workflow."""
         
         # Setup enhanced tool catalog for briefing
@@ -833,7 +839,7 @@ class TestEndToEndWorkflowSimulation:
             }
         ]
         
-        mock_load_catalog.return_value = briefing_catalog
+        # REMOVED: mock_load_catalog (tool functionality moved to extensions).return_value = briefing_catalog
         
         # Mock tool responses in sequence
         mock_call_tool.side_effect = [

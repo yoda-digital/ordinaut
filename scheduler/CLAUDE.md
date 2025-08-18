@@ -386,6 +386,6 @@ When ready for human-in-the-loop workflows and complex sagas:
 1. Keep existing APScheduler for simple recurring tasks
 2. Migrate complex workflows to Temporal Workers
 3. Use same `due_work` table as unified queue
-4. Maintain tool contracts and MCP interfaces
+4. Maintain extension contracts and REST API interfaces
 
 The scheduler provides the rock-solid temporal foundation that transforms agent intentions into reliable, observable, and maintainable execution. It handles the complexity of time so your agents can focus on getting work done.

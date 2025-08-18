@@ -748,23 +748,24 @@ def process_work_item(self, lease: dict) -> bool:
             return False
 ```
 
-### MCP Tool Execution
+### Pipeline Execution Integration (Current State)
 
-Workers coordinate with the MCP (Model Context Protocol) system for tool execution:
+Workers coordinate with the pipeline executor which currently simulates tool execution:
 
 ```python
-# Engine integration handles MCP tool calls
-def execute_pipeline_step(step, context):
-    tool = get_tool(step["uses"])
+# Engine integration handles pipeline processing with tool simulation
+def execute_task_pipeline(task):
+    # Pipeline executor processes structure and simulates tool calls
+    result = run_pipeline(task)
     
-    # Render templates: ${steps.x.y}, ${params.z}
-    args = render_templates(step.get("with", {}), context)
-    
-    # Execute via MCP bridge
-    result = call_mcp_tool(tool, args, timeout=step.get("timeout", 30))
+    # All tool calls are simulated with proper logging and context preservation
+    # Template resolution works: ${steps.x.y}, ${params.z}
+    # Extensions will implement real tool execution
     
     return result
 ```
+
+**Current Behavior**: All `uses` references in pipeline steps are simulated. The engine processes pipeline structure, resolves templates, evaluates conditions, and maintains proper context format for compatibility.
 
 ### Event System Integration
 

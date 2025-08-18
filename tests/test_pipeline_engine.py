@@ -27,8 +27,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from engine.executor import PipelineExecutor, ExecutionContext, PipelineError
 from engine.template import TemplateRenderer, TemplateError
-from engine.registry import ToolRegistry, ToolNotFoundError
-from engine.mcp_client import MCPClient, MCPError
+# TODO: Tool and MCP functionality removed - re-enable when implemented as extensions
+# from engine.registry import ToolRegistry, ToolNotFoundError
+# from engine.mcp_client import MCPClient, MCPError
 
 
 @pytest.mark.pipeline
@@ -522,7 +523,7 @@ class TestToolRegistry:
         registry.load_tools(mock_tool_catalog)
         
         # Test tool lookup
-        tool = registry.get_tool("test-tool.execute")
+        tool = registry.# REMOVED: get_tool("test-tool.execute")
         assert tool is not None
         assert tool["address"] == "test-tool.execute"
         assert tool["transport"] == "http"
@@ -537,7 +538,7 @@ class TestToolRegistry:
         registry = ToolRegistry()
         
         with pytest.raises(ToolNotFoundError):
-            registry.get_tool("nonexistent.tool")
+            registry.# REMOVED: get_tool("nonexistent.tool")
     
     def test_scope_based_tool_filtering(self, mock_tool_catalog):
         """Test filtering tools by agent scopes."""
@@ -585,7 +586,7 @@ class TestToolRegistry:
         ]
         
         registry.load_tools(tools)
-        tool = registry.get_tool("dynamic.tool")
+        tool = registry.# REMOVED: get_tool("dynamic.tool")
         assert tool["address"] == "dynamic.tool"
         assert tool["endpoint"] == "http://localhost:9000/dynamic"
 
@@ -599,7 +600,7 @@ class TestJSONSchemaValidation:
         registry = ToolRegistry()
         registry.load_tools(mock_tool_catalog)
         
-        tool = registry.get_tool("weather.forecast")
+        tool = registry.# REMOVED: get_tool("weather.forecast")
         
         # Valid input
         valid_input = {"location": "Chisinau"}
@@ -612,7 +613,7 @@ class TestJSONSchemaValidation:
         registry = ToolRegistry()
         registry.load_tools(mock_tool_catalog)
         
-        tool = registry.get_tool("weather.forecast")
+        tool = registry.# REMOVED: get_tool("weather.forecast")
         
         # Invalid input - missing required field
         invalid_input = {"wrong_field": "value"}
@@ -627,7 +628,7 @@ class TestJSONSchemaValidation:
         registry = ToolRegistry()
         registry.load_tools(mock_tool_catalog)
         
-        tool = registry.get_tool("weather.forecast")
+        tool = registry.# REMOVED: get_tool("weather.forecast")
         
         # Valid output
         valid_output = {
@@ -644,7 +645,7 @@ class TestJSONSchemaValidation:
         registry = ToolRegistry()
         registry.load_tools(mock_tool_catalog)
         
-        tool = registry.get_tool("weather.forecast")
+        tool = registry.# REMOVED: get_tool("weather.forecast")
         
         # Invalid output - wrong type for temp
         invalid_output = {

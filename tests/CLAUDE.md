@@ -1,7 +1,42 @@
 # Ordinaut - Test Infrastructure
 
 ## Purpose & Mission
-Comprehensive test infrastructure ensuring >99.9% reliability of the Ordinaut through systematic testing at all architectural layers. Provides unit, integration, load, and end-to-end testing with performance benchmarks and continuous validation.
+Comprehensive test infrastructure ensuring >99.9% reliability of the Ordinaut through systematic testing at all architectural layers. **CURRENT STATE**: Tool and MCP-related tests are disabled due to removal of these components from the core system. Tests will be re-enabled when tools are implemented as extensions.
+
+## \u26a0\ufe0f **Current Test State (August 2025)**
+
+### **Active Testing (Working)**
+- \u2705 **Pure Scheduler**: RRULE processing, timezone handling, APScheduler integration
+- \u2705 **Database Operations**: PostgreSQL SKIP LOCKED patterns, task/run persistence  
+- \u2705 **Pipeline Processing**: Template resolution (${steps.x.y}), conditional logic, structure validation
+- \u2705 **Tool Simulation**: Proper context preservation, logging, metrics collection
+- \u2705 **Worker Coordination**: Concurrent processing, job leasing, fault tolerance
+- \u2705 **API Endpoints**: FastAPI routes, authentication, health checks
+- \u2705 **Observability**: Monitoring, metrics, structured logging
+
+### **Disabled Testing (Awaiting Extensions)**
+- \u274c **Tool Catalog**: Registry, validation, scope checking (registry.py simplified)
+- \u274c **MCP Integration**: Client transports, tool discovery, JSON-RPC calls (mcp_client.py deleted)
+- \u274c **Real Tool Execution**: HTTP/stdio/MCP transports (replaced with simulation)
+- \u274c **Tool Schema Validation**: Input/output validation for external tools
+- \u274c **MCP Server Communication**: Protocol compliance, error handling
+
+### **Test Files Status**
+```python
+# tests/test_pipeline_engine.py - PARTIALLY DISABLED
+# Lines 30-32: Commented out imports
+# TODO: Tool and MCP functionality removed - re-enable when implemented as extensions
+# from engine.registry import ToolRegistry, ToolNotFoundError  # DISABLED
+# from engine.mcp_client import MCPClient, MCPError           # DISABLED
+
+# Tests now focus on:
+# - Pipeline structure processing \u2705
+# - Template variable resolution \u2705  
+# - Conditional execution logic \u2705
+# - Tool simulation behavior \u2705
+```
+
+**Re-enablement Plan**: When MCP and tool functionality are implemented as extensions, these test imports will be updated to reference the extension modules instead of the removed core modules.
 
 ## Test Architecture & Organization
 
@@ -15,7 +50,7 @@ tests/
 │   ├── test_engine/             # Pipeline execution engine tests
 │   │   ├── test_executor.py     # Deterministic pipeline execution
 │   │   ├── test_template.py     # ${steps.x.y} variable resolution
-│   │   ├── test_registry.py     # Tool catalog management
+│   │   ├── test_registry.py     # Database task loading (tool catalog removed)
 │   │   └── test_rruler.py       # RRULE → next occurrence calculation
 │   ├── test_api/                # FastAPI service tests
 │   │   ├── test_routes.py       # HTTP endpoint behavior
@@ -69,7 +104,7 @@ tests/
 - **Execution time**: <1 second per test
 - **Dependencies**: None (fully mocked)
 - **Coverage target**: >98% line coverage
-- **Test count**: 500+ tests across all modules
+- **Test count**: ~200 active tests (tool/MCP tests disabled, ~300 tests to re-enable with extensions)
 
 ```python
 # Example: tests/unit/test_engine/test_template.py
@@ -90,7 +125,7 @@ def test_template_variable_resolution():
 - **Execution time**: <10 seconds per test
 - **Dependencies**: Real database, Redis (test instances)
 - **Coverage target**: >90% integration scenario coverage
-- **Test count**: 100+ integration scenarios
+- **Test count**: ~50 active integration scenarios (tool/MCP integration tests disabled)
 
 ```python
 # Example: tests/integration/test_worker_coordination.py

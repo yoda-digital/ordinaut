@@ -892,7 +892,7 @@ def validate_rrule_expression(expr: str, timezone: str):
 
 async def validate_pipeline(pipeline: List[PipelineStep]):
     """Validate pipeline definition and tool availability."""
-    tool_registry = get_tool_registry()
+    # REMOVED: tool_registry = get_tool_registry() (tool functionality moved to extensions)
     
     step_ids = set()
     for step in pipeline:
@@ -901,8 +901,8 @@ async def validate_pipeline(pipeline: List[PipelineStep]):
             raise ValueError(f"Duplicate step ID: {step.id}")
         step_ids.add(step.id)
         
-        # Validate tool exists and is available
-        tool = await tool_registry.get_tool(step.uses)
+        # REMOVED: Tool validation moved to extensions
+        # tool = await tool_registry.# REMOVED: get_tool(step.uses)
         if not tool:
             raise ValueError(f"Tool not found: {step.uses}")
         

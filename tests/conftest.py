@@ -3,6 +3,12 @@
 Simplified pytest configuration for Ordinaut tests.
 
 Provides basic test fixtures without testcontainers for faster testing.
+
+NOTE: Tool and MCP-related tests are currently disabled as these components
+have been removed from the core system. They will be re-implemented as 
+extensions in the future. Tests referencing ToolRegistry, MCPClient, 
+load_catalog, get_tool, etc. will need to be updated when tools are 
+re-implemented as extensions.
 """
 
 import os

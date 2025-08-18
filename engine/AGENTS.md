@@ -138,14 +138,15 @@ render_templates("${steps.calendar.events[?urgent].title}", ctx)
 class CatalogRegistry:
     """Thread-safe tool catalog with caching and scope validation."""
     
-    def get_tool(self, address: str, agent_scopes: Set[str] = None) -> Dict[str, Any]:
-        """Get tool with scope validation."""
-    
-    def list_tools(self, agent_scopes: Set[str] = None) -> List[Dict[str, Any]]:
-        """List accessible tools based on agent scopes."""
-    
-    def reload_catalog(self) -> None:
-        """Force reload from all sources."""
+    # REMOVED: Tool functionality moved to extensions (August 2025)
+    # def # REMOVED: get_tool(self, address: str, agent_scopes: Set[str] = None) -> Dict[str, Any]:
+    #     """REMOVED - Tool catalog functionality moved to extensions"""
+    # 
+    # def list_tools(self, agent_scopes: Set[str] = None) -> List[Dict[str, Any]]:
+    #     """REMOVED - Tool catalog functionality moved to extensions"""
+    # 
+    # def reload_catalog(self) -> None:
+    #     """REMOVED - Tool catalog functionality moved to extensions"""
 ```
 
 **Tool Definition Format**:
@@ -415,7 +416,7 @@ except ConditionEvaluationError as e:
 
 ```python
 # Get tool with scope validation
-tool = get_tool_with_scopes("telegram-mcp.send_message", {"notify"})
+# REMOVED: tool = get_tool_with_scopes("telegram-mcp.send_message", {"notify"})
 
 # List tools available to agent
 agent_scopes = {"calendar.read", "notify", "weather.read"}
@@ -630,7 +631,7 @@ def validate_pipeline_safe(pipeline_def):
 ```python
 # Test tool catalog
 def test_tool_availability():
-    catalog = load_catalog()
+    # REMOVED: catalog = # REMOVED: load_catalog()
     for tool in catalog:
         try:
             # Validate tool definition

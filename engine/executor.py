@@ -9,9 +9,10 @@ from datetime import datetime, timezone
 from jsonschema import validate, ValidationError
 import jmespath
 
-from engine.registry import load_catalog, get_tool
 from engine.template import render_templates, TemplateRenderError
-from engine.mcp_client import call_tool
+# TODO: Tool calling removed - will be implemented as extensions
+# from engine.registry import load_catalog, get_tool
+# from engine.mcp_client import call_tool
 
 # Import observability components
 from observability.metrics import orchestrator_metrics, track_step_execution
@@ -196,20 +197,10 @@ def _execute_step(step: dict, step_index: int, catalog: List[Dict], ctx: dict) -
                 logger.info(f"Step '{step_id}' skipped due to condition: {step['if']}")
                 return None
         
-        # Get tool definition
+        # Get tool address for simulation
         addr = step["uses"]
-        try:
-            tool = get_tool(catalog, addr)
-        except ValueError as e:
-            error_type = "ToolNotFound"
-            raise PipelineExecutionError(
-                f"Step '{step_id}' uses unknown tool '{addr}': {e}",
-                step_id=step_id,
-                step_index=step_index,
-                cause=e
-            )
         
-        # Render input templates
+        # Render input templates (keep template processing)
         step_input = step.get("with", {})
         try:
             rendered_args = render_templates(step_input, ctx)
@@ -222,80 +213,38 @@ def _execute_step(step: dict, step_index: int, catalog: List[Dict], ctx: dict) -
                 cause=e
             )
         
-        # Validate input against tool schema
-        try:
-            validate(instance=rendered_args, schema=tool["input_schema"])
-        except ValidationError as e:
-            error_type = "InputValidationError"
-            raise StepValidationError(
-                f"Step '{step_id}' input validation failed: {e.message}",
-                step_id=step_id,
-                step_index=step_index,
-                cause=e
-            )
-        
-        # Execute tool with timeout and metrics tracking
-        timeout = step.get("timeout_seconds", tool.get("timeout_seconds", 30))
+        # SIMULATE tool execution (tools removed from core system)
+        timeout = step.get("timeout_seconds", 30)
         tool_start_time = time.time()
         
-        try:
-            result = call_tool(addr, tool, rendered_args, timeout=timeout)
-            
-            # Record external tool call metrics
-            tool_duration = time.time() - tool_start_time
-            orchestrator_metrics.record_external_tool_call(
-                tool_address=addr,
-                method=tool.get('method', 'unknown'),
-                status_code=200,  # Success
-                duration=tool_duration
-            )
-            
-            # Log external tool call
-            structured_logger.external_tool_call(
-                tool_address=addr,
-                method=tool.get('method', 'call'),
-                status_code=200,
-                duration_ms=tool_duration * 1000
-            )
-            
-        except Exception as e:
-            error_type = "ToolExecutionError"
-            tool_duration = time.time() - tool_start_time
-            
-            # Record failed tool call metrics
-            orchestrator_metrics.record_external_tool_call(
-                tool_address=addr,
-                method=tool.get('method', 'unknown'),
-                status_code=500,  # Error
-                duration=tool_duration
-            )
-            
-            # Log failed tool call
-            structured_logger.external_tool_call(
-                tool_address=addr,
-                method=tool.get('method', 'call'),
-                status_code=500,
-                duration_ms=tool_duration * 1000
-            )
-            
-            raise PipelineExecutionError(
-                f"Step '{step_id}' tool execution failed: {e}",
-                step_id=step_id,
-                step_index=step_index,
-                cause=e
-            )
+        # Log what would be called
+        logger.info(f"SIMULATED tool call: {addr} with args: {rendered_args}")
         
-        # Validate output against tool schema
-        try:
-            validate(instance=result, schema=tool["output_schema"])
-        except ValidationError as e:
-            error_type = "OutputValidationError"
-            raise StepValidationError(
-                f"Step '{step_id}' output validation failed: {e.message}",
-                step_id=step_id,
-                step_index=step_index,
-                cause=e
-            )
+        # Create mock result for pipeline processing
+        result = {
+            "status": "simulated",
+            "tool_address": addr,
+            "input_args": rendered_args,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "message": f"Tool execution simulated - tools will be implemented as extensions"
+        }
+        
+        # Record simulated tool call metrics
+        tool_duration = time.time() - tool_start_time
+        orchestrator_metrics.record_external_tool_call(
+            tool_address=addr,
+            method='simulated',
+            status_code=200,  # Success
+            duration=tool_duration
+        )
+        
+        # Log simulated tool call
+        structured_logger.external_tool_call(
+            tool_address=addr,
+            method='simulated',
+            status_code=200,
+            duration_ms=tool_duration * 1000
+        )
         
         # Save result if requested
         if "save_as" in step:
@@ -448,11 +397,8 @@ def run_pipeline(task: dict) -> dict:
     # Build execution context
     ctx = _build_execution_context(task)
     
-    # Load tool catalog
-    try:
-        catalog = load_catalog()
-    except Exception as e:
-        raise PipelineExecutionError(f"Failed to load tool catalog: {e}", cause=e)
+    # TODO: Tool catalog loading removed - tools will be implemented as extensions
+    catalog = []  # Empty catalog - no tools available in core system
     
     logger.info(f"Starting pipeline execution for task '{task_id}' ({task_title}) with {len(pipeline)} steps")
     
@@ -583,18 +529,12 @@ def validate_pipeline(pipeline_definition: dict) -> List[str]:
             except PipelineExecutionError as e:
                 errors.append(str(e))
         
-        # Check tool availability
-        try:
-            catalog = load_catalog()
-            for step_index, step in enumerate(pipeline):
-                addr = step.get("uses")
-                if addr:
-                    try:
-                        get_tool(catalog, addr)
-                    except ValueError:
-                        errors.append(f"Step {step_index} uses unknown tool '{addr}'")
-        except Exception as e:
-            errors.append(f"Failed to load tool catalog: {e}")
+        # TODO: Tool availability checking removed - tools will be implemented as extensions
+        # All pipeline steps with "uses" will be simulated during execution
+        for step_index, step in enumerate(pipeline):
+            addr = step.get("uses")
+            if addr:
+                logger.debug(f"Step {step_index} will simulate tool '{addr}' during execution")
     
     except Exception as e:
         errors.append(f"Unexpected validation error: {e}")

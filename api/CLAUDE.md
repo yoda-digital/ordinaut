@@ -26,8 +26,8 @@ api/
 │   ├── tasks.py           # Task CRUD operations
 │   ├── runs.py            # Execution monitoring and logs
 │   ├── system.py          # Health checks and metrics
-│   ├── agents.py          # Agent authentication and scopes
-│   └── tools.py           # Tool catalog and validation
+│   └── agents.py          # Agent authentication and scopes
+│   # tools.py - REMOVED (tool catalog functionality moved to extensions)
 ├── models.py              # SQLAlchemy ORM models
 ├── schemas.py             # Pydantic request/response models
 ├── dependencies.py        # Common dependencies and auth
@@ -892,7 +892,7 @@ def validate_rrule_expression(expr: str, timezone: str):
 
 async def validate_pipeline(pipeline: List[PipelineStep]):
     """Validate pipeline definition and tool availability."""
-    tool_registry = get_tool_registry()
+    # REMOVED: tool_registry = get_tool_registry() (tool functionality moved to extensions)
     
     step_ids = set()
     for step in pipeline:
@@ -901,17 +901,17 @@ async def validate_pipeline(pipeline: List[PipelineStep]):
             raise ValueError(f"Duplicate step ID: {step.id}")
         step_ids.add(step.id)
         
-        # Validate tool exists and is available
-        tool = await tool_registry.get_tool(step.uses)
-        if not tool:
-            raise ValueError(f"Tool not found: {step.uses}")
-        
+        # REMOVED: Tool validation moved to extensions
+        # tool = await tool_registry.# REMOVED: get_tool(step.uses)
+        # if not tool:
+        #     raise ValueError(f"Tool not found: {step.uses}")
+        # 
         # Validate tool input schema if provided
-        if step.with_:
-            try:
-                jsonschema.validate(step.with_, tool.input_schema)
-            except jsonschema.ValidationError as e:
-                raise ValueError(f"Invalid input for tool {step.uses}: {e.message}")
+        # if step.with_:
+        #     try:
+        #         jsonschema.validate(step.with_, tool.input_schema)
+        #     except jsonschema.ValidationError as e:
+        #         raise ValueError(f"Invalid input for tool {step.uses}: {e.message}")
 ```
 
 ### Error Response Standards
