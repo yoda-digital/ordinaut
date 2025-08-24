@@ -1,0 +1,10 @@
+{
+  "id": "events_demo",
+  "name": "Events Demo",
+  "version": "0.1.0",
+  "description": "Demonstrates publish/subscribe via Redis Streams",
+  "module": "extension.py",
+  "enabled": true,
+  "eager": false,
+  "grants": ["ROUTES", "EVENTS_PUB", "EVENTS_SUB"]
+}

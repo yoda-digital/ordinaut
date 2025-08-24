@@ -146,6 +146,21 @@ class OrchestrationMetrics:
             buckets=(0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, float('inf')),
             registry=self.registry
         )
+
+        # Plugin HTTP metrics
+        self.plugin_http_requests_total = Counter(
+            'orchestrator_plugin_http_requests_total',
+            'Total HTTP requests per plugin',
+            ['plugin_id', 'status_code'],
+            registry=self.registry
+        )
+        self.plugin_http_request_duration = Histogram(
+            'orchestrator_plugin_http_request_duration_seconds',
+            'HTTP request duration per plugin',
+            ['plugin_id'],
+            buckets=(0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0, float('inf')),
+            registry=self.registry
+        )
         
         # External tool metrics
         self.external_tool_calls_total = Counter(
@@ -309,6 +324,15 @@ class OrchestrationMetrics:
         self.http_request_duration.labels(
             method=method,
             endpoint=endpoint
+        ).observe(duration)
+
+    def record_plugin_http_request(self, plugin_id: str, status_code: int, duration: float):
+        self.plugin_http_requests_total.labels(
+            plugin_id=plugin_id,
+            status_code=str(status_code)
+        ).inc()
+        self.plugin_http_request_duration.labels(
+            plugin_id=plugin_id
         ).observe(duration)
     
     def record_external_tool_call(self, tool_address: str, method: str, 

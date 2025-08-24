@@ -1,0 +1,9 @@
+{
+  "id": "webui",
+  "name": "Built-in Web UI",
+  "version": "0.1.0",
+  "description": "Simple static web UI served as an extension",
+  "module": "extension.py",
+  "enabled": true,
+  "grants": ["ROUTES", "STATIC"]
+}

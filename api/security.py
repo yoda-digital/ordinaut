@@ -281,8 +281,14 @@ class SecurityHeaders:
             # Referrer policy
             "Referrer-Policy": "strict-origin-when-cross-origin",
             
-            # Content Security Policy
-            "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'",
+            # Content Security Policy - Allow Swagger UI CDN resources
+            "Content-Security-Policy": (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+                "img-src 'self' data: https://fastapi.tiangolo.com https://cdn.jsdelivr.net; "
+                "connect-src 'self'"
+            ),
             
             # Permissions policy
             "Permissions-Policy": "geolocation=(), microphone=(), camera=()",

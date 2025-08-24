@@ -271,6 +271,9 @@ class ErrorResponse(BaseModel):
     timestamp: datetime
 
     class Config:
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }
         schema_extra = {
             "example": {
                 "error": "ValidationError",

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The **Engine Runtime** is the deterministic pipeline execution heart of the Ordinaut. It transforms declarative pipeline definitions into reliable, observable, and fault-tolerant task execution with comprehensive template rendering, JSON schema validation, and MCP tool integration.
+The **Engine Runtime** is the deterministic pipeline execution heart of the Ordinaut. It transforms declarative pipeline definitions into reliable, observable, and fault-tolerant task execution with comprehensive template rendering and JSON schema validation. Tool execution is now handled by the extension system for complete modularity.
 
 ---
 
@@ -186,17 +186,14 @@ class CatalogRegistry:
 5. `~/.orchestrator/tools.json` (user-specific)
 6. Built-in catalog (development/testing)
 
-### 4. mcp_client.py - MCP Bridge Implementation
+### 4. mcp_client.py - ✅ REMOVED - Moved to Extensions
 
-**Purpose**: Universal MCP (Model Context Protocol) client supporting HTTP, stdio, and native MCP server transports.
+**Status**: **COMPLETELY REMOVED** from core engine runtime.
 
-**Key Features**:
-- **Multi-transport support** (HTTP, MCP server, stdio)
-- **JSON-RPC compliance** with proper error handling
-- **Schema validation** for inputs and outputs
-- **Timeout management** with configurable limits
-- **Performance monitoring** with detailed metrics
-- **Tool discovery** from MCP servers
+**New Architecture**: MCP integration is now handled by the extension system:
+- **MCP HTTP Extension** (`/extensions/mcp_http/`) - HTTP-based MCP server implementation
+- **Tool Registry** (`/ordinaut/engine/registry.py`) - Namespaced tool registration for extensions
+- **Extension Framework** - Complete MCP integration with proper isolation
 
 **Core Functions**:
 ```python

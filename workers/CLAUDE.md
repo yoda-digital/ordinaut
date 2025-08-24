@@ -18,8 +18,8 @@ The Workers system is the **distributed job processing backbone** of the Ordinau
 │   Table         │◄──►│  (runner.py)     │───►│ Executor        │
 │                 │    │                  │    │ (engine/)       │
 │ SKIP LOCKED     │    │ • Lease work     │    │                 │
-│ FOR UPDATE      │    │ • Process tasks  │    │ • Tool calls    │
-│                 │    │ • Heartbeat      │    │ • MCP bridge    │
+│ FOR UPDATE      │    │ • Process tasks  │    │ • Tool simul.   │
+│                 │    │ • Heartbeat      │    │ • Extensions    │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
          ▲                       │                       
          │              ┌────────▼────────┐              

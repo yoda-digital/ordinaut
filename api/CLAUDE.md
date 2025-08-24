@@ -7,6 +7,7 @@ The **FastAPI Application Layer** serves as the REST API gateway for the Ordinau
 **Core Responsibilities:**
 - **Task Lifecycle Management** - Create, read, update, delete, and control scheduled tasks
 - **Execution Monitoring** - Track pipeline runs, view logs, and analyze performance
+- **Extension Integration** - ✅ **OPERATIONAL** - Host and coordinate extension system with lazy loading
 - **Agent Authentication** - Scope-based access control and rate limiting
 - **System Health** - Health checks, metrics, and operational status
 - **Input Validation** - JSON Schema validation for all agent requests
@@ -20,19 +21,19 @@ The FastAPI application follows a layered architecture pattern with clear separa
 
 ```
 api/
-├── main.py                 # FastAPI app initialization and middleware
+├── main.py                 # FastAPI app initialization, middleware, and extension integration
 ├── routes/                 # API endpoint implementations
 │   ├── __init__.py
 │   ├── tasks.py           # Task CRUD operations
 │   ├── runs.py            # Execution monitoring and logs
-│   ├── system.py          # Health checks and metrics
+│   ├── events.py          # ✅ EVENT PUBLISHING - Redis Streams integration
 │   └── agents.py          # Agent authentication and scopes
 │   # tools.py - REMOVED (tool catalog functionality moved to extensions)
 ├── models.py              # SQLAlchemy ORM models
-├── schemas.py             # Pydantic request/response models
-├── dependencies.py        # Common dependencies and auth
-├── exceptions.py          # Custom exception handlers
-└── middleware.py          # Request logging and CORS
+├── schemas.py             # Pydantic request/response models (includes event schemas)
+├── dependencies.py        # Common dependencies, auth, and extension health checks
+├── security.py            # ✅ JWT authentication and rate limiting
+└── middleware.py          # Request logging, CORS, and extension request routing
 ```
 
 ### Key Architectural Patterns
@@ -71,6 +72,42 @@ class TaskCreateRequest(BaseModel):
     timezone: str = Field(validate_timezone=True)
     payload: PipelinePayload
 ```
+
+### Extension Integration (FULLY OPERATIONAL)
+
+**Plugin System Integration:**
+```python
+# Extension system initialization in main.py
+from ordinaut.plugins import ExtensionLoader
+from ordinaut.engine.registry import ToolRegistry
+
+# Initialize extension system
+_ext_tool_registry = ToolRegistry()
+_ext_loader = ExtensionLoader(app)
+_ext_loader.load_all(tool_registry=_ext_tool_registry, context={})
+
+# Extension middleware for lazy loading with redirect-based routing
+@app.middleware("http")  
+async def request_middleware(request: Request, call_next):
+    path = request.url.path
+    if path.startswith('/ext/'):
+        parts = path.split('/', 3)
+        if len(parts) >= 3:
+            pid = parts[2]
+            if pid in _ext_loader.specs and pid not in _ext_loader.loaded:
+                # Lazy-load extension and redirect
+                result = _ext_loader._ensure_loaded(pid, tool_registry=_ext_tool_registry, context={})
+                if result:
+                    return RedirectResponse(url=str(request.url), status_code=307)
+    
+    return await call_next(request)
+```
+
+**Operational Extensions:**
+- **Observability Extension** (`/ext/observability/metrics`) - Prometheus metrics collection
+- **Web UI Extension** (`/ext/webui/`) - Task management interface  
+- **MCP HTTP Extension** (`/ext/mcp_http/`) - MCP server with tool integrations
+- **Events Demo Extension** (`/ext/events_demo/`) - Redis Streams demonstration
 
 ---
 

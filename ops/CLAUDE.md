@@ -5,8 +5,9 @@
 The `./ops/` directory contains all production deployment infrastructure for the Ordinaut. This includes Docker containerization, monitoring stack, health checks, configuration management, and deployment patterns for both development and production environments.
 
 **Core Responsibilities:**
-- Multi-stage Docker builds optimized for production performance
+- Multi-stage Docker builds optimized for production performance with extension support
 - Docker Compose orchestration for local development and production deployment
+- ✅ **Extension System Integration** - Docker containers include extensions directory
 - Monitoring and observability stack (Prometheus, Grafana, AlertManager)
 - Health check systems and graceful shutdown procedures
 - Configuration management and secret handling
@@ -79,6 +80,10 @@ WORKDIR /app
 COPY --from=builder /root/.local /home/orchestrator/.local
 COPY api/ ./api/
 COPY engine/ ./engine/
+COPY ordinaut/ ./ordinaut/
+COPY observability/ ./observability/
+COPY migrations/ ./migrations/
+COPY extensions/ ./extensions/
 USER orchestrator
 ENV PATH=/home/orchestrator/.local/bin:$PATH
 EXPOSE 8080

@@ -2,10 +2,11 @@
 
 ## Purpose & Mission
 
-The observability stack provides comprehensive monitoring, metrics collection, structured logging, and intelligent alerting for the Ordinaut. This system ensures production reliability, performance visibility, and rapid incident response through a complete observability solution.
+The observability stack provides comprehensive monitoring, metrics collection, structured logging, and intelligent alerting for the Ordinaut. This system ensures production reliability, performance visibility, and rapid incident response through a complete observability solution integrated with the extension system.
 
 **Core Objectives:**
 - **Real-time Monitoring**: Track system health, performance metrics, and business KPIs
+- **Extension Integration**: ✅ **OPERATIONAL** - Observability extension provides `/metrics` endpoint
 - **Structured Logging**: Centralized, searchable logs with correlation IDs and context
 - **Proactive Alerting**: Intelligent alerts with actionable information and escalation
 - **Performance Visibility**: Deep insights into system behavior and optimization opportunities
@@ -22,9 +23,10 @@ Production Traffic → [Metrics Collection] → [Prometheus] → [Grafana Dashbo
 ```
 
 ### Component Relationships
-- **metrics.py** → Prometheus metrics collection and custom instrumentations
+- **metrics.py** → Core metrics collection and instrumentation (also served by observability extension)
 - **logging.py** → Structured logging with correlation IDs and context enrichment
 - **health.py** → System health checks and dependency monitoring
+- **Extension Integration** → ✅ **OPERATIONAL** - `/ext/observability/metrics` endpoint
 - **alerts.py** → Alert definitions, routing rules, and notification management
 
 ---

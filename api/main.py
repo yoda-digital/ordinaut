@@ -18,7 +18,6 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from .dependencies import check_database_health, check_redis_health
 from .schemas import HealthResponse, ErrorResponse
@@ -30,7 +29,8 @@ from .security import (
 from slowapi.errors import RateLimitExceeded
 
 # Import observability components
-from observability.metrics import orchestrator_metrics, get_metrics_handler
+from ordinaut.plugins import ExtensionLoader
+from ordinaut.engine.registry import ToolRegistry
 from observability.logging import (
     api_logger, set_request_context, generate_request_id,
     track_http_requests, log_with_context
@@ -126,6 +126,15 @@ app = FastAPI(
     ]
 )
 
+# Initialize extension system (lazy loading)
+_ext_tool_registry = ToolRegistry()
+_ext_loader = ExtensionLoader(app)
+_ext_loader.load_all(tool_registry=_ext_tool_registry, context={})
+try:
+    _ext_tool_registry.freeze()
+except Exception:
+    pass
+
 # Add security middleware stack (order matters!)
 if ENVIRONMENT == "production":
     # Trusted host middleware for production
@@ -208,6 +217,26 @@ async def request_middleware(request: Request, call_next):
         duration_ms=0,  # Will be updated below
     )
     
+    # Lazy-load plugin router if hitting /ext/{plugin}/...
+    path = request.url.path
+    if path.startswith('/ext/'):
+        parts = path.split('/', 3)
+        if len(parts) >= 3:
+            pid = parts[2]
+            if pid in getattr(_ext_loader, 'specs', {}) and pid not in getattr(_ext_loader, 'loaded', {}):
+                try:
+                    logger.info(f"Lazy-loading extension: {pid}")
+                    result = _ext_loader._ensure_loaded(pid, tool_registry=_ext_tool_registry, context={})
+                    if result:
+                        logger.info(f"Extension {pid} loaded successfully: {result}")
+                        # Redirect to same URL to trigger the newly mounted router
+                        from fastapi.responses import RedirectResponse
+                        return RedirectResponse(url=str(request.url), status_code=307)
+                    else:
+                        logger.warning(f"Extension {pid} failed to load (returned None/False)")
+                except Exception as e:
+                    logger.error(f"Failed to load extension {pid}: {e}", exc_info=True)
+
     # Process request
     try:
         response = await call_next(request)
@@ -217,13 +246,7 @@ async def request_middleware(request: Request, call_next):
         duration_seconds = (datetime.now(timezone.utc) - start_time).total_seconds()
         duration_ms = duration_seconds * 1000
         
-        # Record metrics
-        orchestrator_metrics.record_http_request(
-            method=request.method,
-            endpoint=request.url.path,
-            status_code=status_code,
-            duration=duration_seconds
-        )
+        # Metrics handled by observability extension
         
         # Log completion
         logger.api_request(
@@ -244,13 +267,7 @@ async def request_middleware(request: Request, call_next):
         duration_ms = duration_seconds * 1000
         status_code = getattr(e, 'status_code', 500)
         
-        # Record metrics
-        orchestrator_metrics.record_http_request(
-            method=request.method,
-            endpoint=request.url.path,
-            status_code=status_code,
-            duration=duration_seconds
-        )
+        # Metrics handled by observability extension
         
         # Log error
         logger.error(
@@ -270,16 +287,7 @@ app.include_router(events.router)
 app.include_router(agents.router)
 
 
-# Metrics endpoint for Prometheus
-@app.get("/metrics", tags=["health"])
-async def metrics_endpoint():
-    """
-    Prometheus metrics endpoint.
-    
-    Returns all collected metrics in Prometheus format for scraping.
-    """
-    metrics_data = generate_latest(orchestrator_metrics.registry)
-    return Response(content=metrics_data, media_type=CONTENT_TYPE_LATEST)
+# Metrics endpoint is served by the observability extension
 
 
 # Health check endpoints
