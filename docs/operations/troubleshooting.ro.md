@@ -16,7 +16,7 @@ Acest ghid oferă soluții la problemele comune pe care le puteți întâmpina �
 - **Soluție:**
     1.  **`401 Unauthorized`**: Asigurați-vă că furnizați un token JWT valid în antetul `Authorization: Bearer <token>`.
     2.  **`403 Forbidden`**: Agentul autentificat nu are `scope`-urile necesare pentru acțiune.
-    3.  **Consultați Avertismentele de Securitate:** Verificați ghidul de [Autentificare](./authentication.md) pentru avertismente critice.
+    3.  **Consultați Avertismentele de Securitate:** Verificați ghidul de [Autentificare](../api/authentication.md) pentru avertismente critice.
 
 ### Sarcinile nu se execută
 

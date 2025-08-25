@@ -73,6 +73,7 @@ nav:
   - 'API Reference':
     - 'Overview': 'api/api_reference.md'
     - 'Authentication': 'api/authentication.md'
+    - 'Agents': 'api/agents.md'
     - 'Tasks': 'api/tasks.md'
     - 'Runs': 'api/runs.md'
     - 'Events': 'api/events.md'

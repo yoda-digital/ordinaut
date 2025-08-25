@@ -32,7 +32,7 @@ When an issue occurs, start with these steps:
 - **Solution:**
     1.  **`401 Unauthorized`**: This means your token is missing, invalid, or expired. Ensure you are providing a valid JWT access token in the `Authorization: Bearer <token>` header.
     2.  **`403 Forbidden`**: This means your token is valid, but the authenticated agent does not have the required `scopes` to perform the requested action.
-    3.  **Review Security Warnings:** Check the [Authentication guide](./authentication.md) for critical security warnings about the current state of the authentication system, as these may be the source of your issue.
+    3.  **Review Security Warnings:** Check the [Authentication guide](../api/authentication.md) for critical security warnings about the current state of the authentication system, as these may be the source of your issue.
 
 ### Tasks are not executing
 

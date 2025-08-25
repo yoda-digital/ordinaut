@@ -81,7 +81,6 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY api/ /app/api/
 COPY engine/ /app/engine/
 COPY ordinaut/ /app/ordinaut/
-COPY observability/ /app/observability/
 COPY migrations/ /app/migrations/
 
 # Change ownership to app user

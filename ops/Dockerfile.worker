@@ -78,7 +78,6 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code needed for worker
 COPY workers/ /app/workers/
 COPY engine/ /app/engine/
-COPY observability/ /app/observability/
 
 # Change ownership to app user
 RUN chown -R appuser:appuser /app
