@@ -20,11 +20,19 @@ When an issue occurs, start with these steps:
 
 3.  **Check Service Logs:** View the logs for the specific component that seems to be failing.
     ```bash
-    # Example: Check the worker logs
-    docker compose logs -f worker
+    # Example: Check the API logs
+    docker compose logs -f api
     ```
 
 ## Common Problems
+
+### Authentication Errors (`401`/`403`)
+
+- **Symptom:** You receive a `401 Unauthorized` or `403 Forbidden` error.
+- **Solution:**
+    1.  **`401 Unauthorized`**: This means your token is missing, invalid, or expired. Ensure you are providing a valid JWT access token in the `Authorization: Bearer <token>` header.
+    2.  **`403 Forbidden`**: This means your token is valid, but the authenticated agent does not have the required `scopes` to perform the requested action.
+    3.  **Review Security Warnings:** Check the [Authentication guide](./authentication.md) for critical security warnings about the current state of the authentication system, as these may be the source of your issue.
 
 ### Tasks are not executing
 
@@ -42,18 +50,9 @@ When an issue occurs, start with these steps:
     2.  **Examine the `error` field:** This will contain the specific error message, such as a tool timeout, a validation error, or a connection failure.
     3.  **Check worker logs:** The worker logs will contain a detailed stack trace and context for the failure.
 
-### High CPU or Memory Usage
+### Service Fails to Start
 
-- **Symptom:** The system is slow or unresponsive.
+- **Symptom:** A container (e.g., `api`) exits immediately or is in a restart loop.
 - **Solution:**
-    1.  **Identify the bottleneck:** Use `docker stats` to see which container is consuming the most resources.
-    2.  **Scale your workers:** If the `due_work` queue is consistently large, you may need more workers. See the [Deployment Guide](deployment.md).
-    3.  **Optimize pipelines:** Look for inefficient pipeline steps that may be performing heavy computations or large data transfers.
-
-### Database Connection Errors
-
-- **Symptom:** The API or other services report that they cannot connect to the database.
-- **Solution:**
-    1.  **Check PostgreSQL container:** Ensure the `postgres` container is running and healthy.
-    2.  **Check connection pool:** The `GET /health` endpoint provides details on the database connection pool status. If the pool is exhausted, you may need to increase its size in the configuration.
-    3.  **Check network:** Ensure the Docker network is functioning correctly.
+    1.  **Check for Missing Secrets:** For production deployments (`start.sh prod` or `start.sh ghcr`), ensure you have created an `.env` file in the `ops/` directory and set a secure `JWT_SECRET_KEY`. The application will fail to start without it.
+    2.  **Check Database/Redis Health:** Ensure the `postgres` and `redis` containers are `Up (healthy)` before the other services start. If they are not, check their logs for errors.

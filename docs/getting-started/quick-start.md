@@ -1,44 +1,10 @@
 # Quick Start Tutorial
 
-This tutorial will guide you through creating, scheduling, and verifying your first automated workflow with the enterprise task scheduling system. We will create a task that runs a simple pipeline every minute.
+This tutorial will guide you through creating, scheduling, and verifying your first automated workflow with Ordinaut. We will create a task that runs a simple pipeline every minute.
 
 ## Prerequisites: Get the System Running
 
-Before creating your first task, you need a running task scheduling system. The fastest way is using our pre-built Docker images.
-
-### 🚀 **Option 1: Instant Start with Pre-built Images (RECOMMENDED)**
-
-```bash
-# Clone the repository
-git clone https://github.com/yoda-digital/task-scheduler.git
-cd task-scheduler/ops/
-
-# Start with pre-built GHCR images (instant startup)
-./start.sh ghcr --logs
-
-# Verify system is running
-curl http://localhost:8080/health
-```
-
-**✅ This uses production-ready images published to GitHub Container Registry:**
-- `ghcr.io/yoda-digital/task-scheduler-api:latest` - FastAPI REST API service
-- `ghcr.io/yoda-digital/task-scheduler-scheduler:latest` - APScheduler service  
-- `ghcr.io/yoda-digital/task-scheduler-worker:latest` - Job execution service
-
-**🎉 System Ready in 30 seconds!**
-- 📡 **REST API** at `http://localhost:8080`
-- 📊 **Health Dashboard** at `http://localhost:8080/health`
-- 📚 **Interactive API Docs** at `http://localhost:8080/docs`
-
-### 🛠️ **Option 2: Build from Source (Development)**
-
-```bash
-# For development or customization
-cd task-scheduler/ops/
-./start.sh dev --build --logs
-```
-
-**Note:** Building from source takes 5-10 minutes vs 30 seconds with pre-built images.
+Before creating your first task, you need a running Ordinaut system. Follow the [Installation Guide](installation.md) to get started.
 
 ---
 
@@ -87,7 +53,7 @@ This task is scheduled to run every minute using a cron expression. The pipeline
 ```
 
 !!! info "Tool Usage"
-    The `debug.echo` and `debug.log` tools are built-in utilities for testing. `debug.echo` simply returns the data it receives, while `debug.log` prints the message to the worker's log.
+    The `debug.echo` and `debug.log` tools are built-in utilities for testing. `debug.echo` simply returns the data it receives, while `debug.log` prints the message to the worker's log. In the core scheduler, these tool calls are simulated.
 
 ## 2. Create the Task via API
 
@@ -143,10 +109,7 @@ You will see a JSON response listing the recent runs. Look for `"success": true`
 You can also see the live execution in the worker's logs. The `debug.log` tool we used in the pipeline will print its output there.
 
 ```bash
-# If using GHCR images
-./ops/start.sh ghcr --logs
-
-# If built from source
+# From the ops/ directory where you started the system
 docker compose logs -f worker
 ```
 

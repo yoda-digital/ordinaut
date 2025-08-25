@@ -1,15 +1,13 @@
 # Referință API
 
-API-ul REST Ordinaut este interfața principală pentru asistenții AI și sisteme externe pentru a interacționa cu backend-ul de programare a sarcinilor prin MCP. API-ul este construit cu FastAPI și oferă documentație interactivă automată.
+API-ul REST Ordinaut este interfața principală pentru toate interacțiunile cu sistemul de programare a sarcinilor. Este construit cu FastAPI, care oferă documentație interactivă automată.
 
 ## Documentație Interactivă
 
-Deși această referință oferă o imagine de ansamblu cuprinzătoare, puteți utiliza și documentația interactivă generată de API-ul însuși:
+Deși această referință oferă o imagine de ansamblu, puteți utiliza și documentația interactivă generată de API-ul însuși:
 
 - **Swagger UI:** [http://localhost:8080/docs](http://localhost:8080/docs)
 - **ReDoc:** [http://localhost:8080/redoc](http://localhost:8080/redoc)
-
-Aceste interfețe vă permit să explorați și să testați fiecare punct final direct din browser.
 
 ## URL de Bază
 
@@ -20,7 +18,7 @@ Aceste interfețe vă permit să explorați și să testați fiecare punct final
 
 ### Gestionarea Erorilor
 
-API-ul utilizează coduri de stare HTTP standard pentru a indica succesul sau eșecul unei cereri. Răspunsurile de eroare urmează un format JSON consistent:
+API-ul utilizează coduri de stare HTTP standard. Răspunsurile de eroare urmează un format JSON consistent:
 
 ```json
 {
@@ -28,12 +26,13 @@ API-ul utilizează coduri de stare HTTP standard pentru a indica succesul sau e�
   "message": "Expresie de programare invalidă",
   "details": {
     "field": "schedule_expr",
-    "value": "cron invalid",
-    "expected": "Expresie cron validă (de ex., '0 9 * * 1-5')"
-  }
+    "value": "cron invalid"
+  },
+  "request_id": "req-123456789",
+  "timestamp": "2025-01-10T10:00:00Z"
 }
 ```
 
 ### Limitarea Ratei (Rate Limiting)
 
-Pentru a asigura stabilitatea sistemului, API-ul impune limite de rată pe bază de agent. Dacă depășiți limita de rată, veți primi un răspuns `429 Too Many Requests`. Verificați antetele `X-RateLimit-Remaining` și `X-RateLimit-Reset` pentru a vă gestiona frecvența cererilor.
+Pentru a asigura stabilitatea, API-ul impune limite de rată, implicit pe baza adresei IP a clientului. Dacă depășiți limita, veți primi un răspuns `429 Too Many Requests`. Verificați antetul `Retry-After` pentru a ști când puteți trimite o nouă cerere.

@@ -1,201 +1,104 @@
 # Deployment
 
-This guide covers deploying the enterprise task scheduling system to production environments using production-ready Docker images.
+This guide covers deploying the Ordinaut system to production environments using production-ready Docker images.
 
 **🚀 Recommended:** Use pre-built images from GitHub Container Registry (GHCR) for reliable, security-tested production deployments.
 
 ## Production Setup
 
-### 🚀 **Option A: Production Images (RECOMMENDED)**
+### 1. Configure Your Environment
 
-Use battle-tested, automatically published Docker images for reliable production deployment:
+!!! danger "Critical Security Action Required"
+    Before deploying to production, you **MUST** configure a secure JWT secret. The system is insecure without it.
+
+    1.  Navigate to the `ops/` directory.
+    2.  Copy the example environment file:
+        ```bash
+        cp .env.example .env
+        ```
+    3.  Open the `.env` file and set a strong, random value for `JWT_SECRET_KEY`. You can generate one with:
+        ```bash
+        openssl rand -hex 32
+        ```
+    4.  Update the `POSTGRES_PASSWORD` to a secure password.
+
+### 2. Deploy the System
+
+Use the provided startup script to launch the system with production-ready, pre-built images from GHCR.
 
 ```bash
-cd ops/
-
-# Configure environment (copy and customize .env.example to .env)
-cp .env.example .env
-# Set secure JWT_SECRET_KEY and production database credentials
-
-# Deploy with pre-built GHCR images
+# From the ops/ directory
 ./start.sh ghcr
 ```
 
-**✅ Production Benefits:**
-- **Security-tested images** with automated vulnerability scanning
-- **Build attestations** and Software Bill of Materials (SBOM) included
-- **Zero build time** - instant deployment without compilation
-- **Semantic versioning** with tagged releases (`v1.7.1`, `latest`)
-- **Multi-stage optimized** images (50% smaller than development builds)
-- **Automatic updates** via GitHub Actions on every release
+This command reads the `docker-compose.ghcr.yml` file and starts all services in the correct order.
 
-**📚 Production Images Available:**
-- `ghcr.io/yoda-digital/task-scheduler-api:latest` - FastAPI REST API service
-- `ghcr.io/yoda-digital/task-scheduler-scheduler:latest` - APScheduler service  
-- `ghcr.io/yoda-digital/task-scheduler-worker:latest` - Job execution service
+### 3. Verify the Deployment
 
-### 🛠️ **Option B: Custom Build (Advanced)**
-
-For customized deployments or when you need to modify the source:
+Check that all services are running and healthy.
 
 ```bash
-cd ops/
+# From the ops/ directory
+docker compose -f docker-compose.ghcr.yml ps
 
-# Ensure your .env file is configured
-cp .env.example .env
-# Customize JWT_SECRET_KEY and other production values
-
-# Build and deploy from source
-./start.sh prod --build
-```
-
-**⚠️ Note:** Building from source requires additional build time, dependencies, and maintenance.
-
-### 🚀 **Production Configuration**
-
-**Critical Environment Variables:**
-```bash
-# Security (REQUIRED)
-JWT_SECRET_KEY="$(openssl rand -hex 32)"  # Generate secure 256-bit key
-
-# Database (Production values)
-DATABASE_URL="postgresql://orchestrator:SECURE_PASSWORD@postgres:5432/orchestrator"
-REDIS_URL="redis://redis:6379/0"
-
-# Performance
-WORKER_CONCURRENCY=10
-API_WORKERS=4
-SCHEDULER_INTERVAL=5
-
-# Monitoring
-ENABLE_METRICS=true
-LOG_LEVEL=INFO
+# Query the health endpoint
+curl http://localhost:8080/health
 ```
 
 ## Scaling & High Availability
 
-### 🚀 **Horizontal Scaling with GHCR Images**
+### Horizontal Scaling
 
-Pre-built images scale instantly without build overhead:
+You can scale the number of `worker` and `api` services to handle higher loads. Use the `--scale` flag with the appropriate compose file.
 
 ```bash
-# Scale workers for high task throughput
-docker compose -f docker-compose.ghcr.yml up -d --scale worker=10
+# From the ops/ directory
 
-# Scale API servers for high availability
+# Scale workers to handle more concurrent tasks
+docker compose -f docker-compose.ghcr.yml up -d --scale worker=5
+
+# Scale the API for high availability behind a load balancer
 docker compose -f docker-compose.ghcr.yml up -d --scale api=3
-
-# Check scaling status
-docker compose ps
-```
-
-### 📊 **Resource-Based Scaling**
-
-**Worker Scaling Guidelines:**
-- **Light load:** 2-3 workers (handles ~100 tasks/hour)
-- **Medium load:** 5-8 workers (handles ~500 tasks/hour)
-- **Heavy load:** 10+ workers (handles 1000+ tasks/hour)
-
-**API Scaling for Load Balancing:**
-```bash
-# Multi-instance API deployment
-docker compose -f docker-compose.ghcr.yml up -d \
-  --scale api=3 \
-  --scale worker=5
-
-# Add nginx load balancer
-docker compose -f docker-compose.ghcr.yml -f docker-compose.lb.yml up -d
-```
-
-### 🔍 **Monitoring Scaled Deployments**
-
-```bash
-# Check container health across scaled services
-docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
-
-# Monitor resource usage
-docker stats --no-stream
-
-# Check application health
-curl http://localhost:8080/health | jq '.checks'
 ```
 
 ## Production Operations
 
-### 🔒 **Data Persistence & Backups**
+### Data Persistence & Backups
 
-**PostgreSQL (Primary Data):**
-- **Data Volume:** `pgdata-prod` Docker volume for persistent storage
-- **Backup Strategy:** Implement automated `pg_dump` for data protection
-- **High Availability:** Consider PostgreSQL clustering for mission-critical deployments
+- **PostgreSQL:** All core data is stored in the PostgreSQL database. The data is persisted in a Docker volume named `postgres_data`. You must implement a standard database backup strategy (e.g., a cron job running `pg_dump`) to protect your data.
+- **Redis:** Redis is used for transient data like event streams and caches. While basic persistence is enabled, it should not be treated as a primary data store.
 
-**Redis (Transient Data):**
-- **Purpose:** Event streams, caches, and temporary coordination data
-- **Persistence:** AOF enabled but not treated as primary data store
-- **Recovery:** Automatically rebuilds from PostgreSQL on restart
+### Monitoring
 
-**Automated Backup Script:**
+The system is designed for observability. You can deploy a full monitoring stack (Prometheus, Grafana, etc.) using the provided compose file:
+
 ```bash
-# Example production backup
-#!/bin/bash
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-docker compose exec postgres pg_dump -U orchestrator orchestrator | \
-  gzip > "/backups/ordinaut_${TIMESTAMP}.sql.gz"
+# From the ops/ directory
+docker compose -f docker-compose.ghcr.yml -f docker-compose.observability.yml up -d
 ```
 
-### 📊 **Production Monitoring**
+### Image Update Strategy
 
-**Health Monitoring:**
-```bash
-# System health check
-curl -f http://localhost:8080/health || alert_escalation
+For production stability, it is recommended to pin your deployment to a specific version tag instead of using `latest`.
 
-# Database connectivity
-docker compose exec postgres pg_isready -U orchestrator
+Edit your `ops/docker-compose.ghcr.yml` file:
 
-# Redis connectivity
-docker compose exec redis redis-cli ping
-```
-
-**Performance Monitoring:**
-```bash
-# Check queue depth
-curl -s http://localhost:8080/metrics | grep queue_depth
-
-# Monitor task execution rates
-curl -s http://localhost:8080/metrics | grep task_execution_rate
-
-# Container resource usage
-docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
-```
-
-### 🚀 **Image Update Strategy**
-
-**Automatic Updates (Production):**
-```bash
-# Pull latest production images
-docker compose -f docker-compose.ghcr.yml pull
-
-# Rolling update with zero downtime
-docker compose -f docker-compose.ghcr.yml up -d --scale api=6
-sleep 30  # Wait for health checks
-docker compose -f docker-compose.ghcr.yml up -d --scale api=3
-```
-
-**Version Pinning (Recommended):**
 ```yaml
-# docker-compose.ghcr.yml - pin to specific versions
 services:
   api:
-    image: ghcr.io/yoda-digital/ordinaut-api:v1.7.1
+    image: ghcr.io/yoda-digital/ordinaut-api:v1.7.1 # Pinned version
   scheduler:
-    image: ghcr.io/yoda-digital/ordinaut-scheduler:v1.7.1
+    image: ghcr.io/yoda-digital/ordinaut-scheduler:v1.7.1 # Pinned version
   worker:
-    image: ghcr.io/yoda-digital/ordinaut-worker:v1.7.1
+    image: ghcr.io/yoda-digital/ordinaut-worker:v1.7.1 # Pinned version
 ```
 
-**Security Updates:**
-- Images automatically rebuilt on security patches
-- GHCR images include security attestations and SBOMs
-- Automated vulnerability scanning in CI/CD pipeline
-- Subscribe to [GitHub releases](https://github.com/yoda-digital/ordinaut/releases) for notifications
+To update, you can pull the latest images and restart the services:
+
+```bash
+# Pull the latest tagged images
+docker compose -f docker-compose.ghcr.yml pull
+
+# Restart the services to apply the update
+docker compose -f docker-compose.ghcr.yml up -d
+```

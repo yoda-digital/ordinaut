@@ -265,4 +265,4 @@ docker-compose.override.yml
 docker-compose.local.yml
 
 .mcp.json
-.mcp.json
+.code/

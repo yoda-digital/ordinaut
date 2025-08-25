@@ -1,12 +1,18 @@
-# Scheduling with RRULE
+# Scheduling Tasks
 
-Ordinaut uses the powerful **RFC 5545 Recurrence Rule (RRULE)** standard for all complex, calendar-aware scheduling. This allows you to define sophisticated schedules that go far beyond what traditional cron expressions can support.
+Ordinaut provides a flexible and powerful scheduling system that supports several methods for defining when a task should run. You can choose the method that best fits your needs, from simple one-time executions to complex, calendar-aware recurring schedules.
 
-When creating a task, set the `schedule_kind` to `rrule` and provide the rule string in `schedule_expr`.
+When creating a task, you specify the scheduling method using the `schedule_kind` field and provide the corresponding expression in `schedule_expr`.
 
-## Common RRULE Examples
+---
 
-Here are some practical examples you can use in your tasks.
+## RRULE Scheduling
+
+For the most complex, calendar-aware scheduling, Ordinaut uses the powerful **RFC 5545 Recurrence Rule (RRULE)** standard. This allows you to define sophisticated schedules that go far beyond what traditional cron expressions can support.
+
+Set `schedule_kind` to `rrule` to use this method.
+
+### Common RRULE Examples
 
 | Use Case                                  | RRULE Expression                                       |
 |:------------------------------------------|:-------------------------------------------------------|
@@ -17,38 +23,72 @@ Here are some practical examples you can use in your tasks.
 | Annually on June 15th                     | `FREQ=YEARLY;BYMONTH=6;BYMONTHDAY=15`                    |
 | Twice a day (9 AM and 6 PM)               | `FREQ=DAILY;BYHOUR=9,18`                                 |
 
-## Key RRULE Components
+### Key RRULE Components
 
-An RRULE string is a semicolon-separated list of properties.
+An RRULE string is a semicolon-separated list of properties like `FREQ`, `INTERVAL`, `BYDAY`, `BYMONTH`, `BYHOUR`, etc.
 
-- **`FREQ`**: The base frequency of the recurrence. (e.g., `DAILY`, `WEEKLY`, `MONTHLY`, `YEARLY`).
-- **`INTERVAL`**: Works with `FREQ` to specify intervals. `FREQ=WEEKLY;INTERVAL=2` means every two weeks.
-- **`BYDAY`**: Specifies the days of the week (`MO`, `TU`, `WE`, `TH`, `FR`, `SA`, `SU`).
-- **`BYMONTHDAY`**: Specifies the day of the month (e.g., `1`, `15`, `-1` for the last day).
-- **`BYMONTH`**: Specifies the month of the year (1-12).
-- **`BYHOUR`**, **`BYMINUTE`**, **`BYSECOND`**: Specifies the time of day.
-- **`BYSETPOS`**: Used with other `BY` rules to select a specific occurrence from the generated set. `BYSETPOS=-1` is how you select the *last* occurrence in a period.
+### Timezones and DST
 
-## Timezones and DST
+RRULE processing in Ordinaut is fully timezone-aware. It is **critical** to provide a valid `timezone` name (e.g., `Europe/Chisinau`) in your task definition to ensure schedules handle Daylight Saving Time (DST) transitions correctly.
 
-RRULE processing in Ordinaut is fully timezone-aware. It is **critical** to provide a valid `timezone` name (e.g., `Europe/Chisinau`) in your task definition. The system uses this timezone to:
+---
 
-- Correctly interpret the start time of the rule.
-- Handle Daylight Saving Time (DST) transitions automatically, ensuring your tasks run at the correct local time year-round.
-- Calculate all future occurrences accurately.
+## Cron Scheduling
 
-### Example Task with RRULE
+For traditional, time-based scheduling, Ordinaut supports standard 5-field cron expressions.
+
+Set `schedule_kind` to `cron` to use this method.
+
+### Cron Expression Format
+
+The format is a string with five fields separated by spaces:
+
+`* * * * *`
+
+- **Minute** (0-59)
+- **Hour** (0-23)
+- **Day of Month** (1-31)
+- **Month** (1-12)
+- **Day of Week** (0-6, where Sunday is 0 and 6, or use names like SUN, MON)
+
+### Example Cron Task
 
 ```json
 {
-  "title": "Monthly Financial Report",
-  "description": "Generate the financial report on the last business day of the month.",
-  "schedule_kind": "rrule",
-  "schedule_expr": "FREQ=MONTHLY;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=-1;BYHOUR=17;BYMINUTE=0",
+  "title": "Hourly System Cleanup",
+  "description": "Run a cleanup script at the beginning of every hour.",
+  "schedule_kind": "cron",
+  "schedule_expr": "0 * * * *",
+  "timezone": "UTC",
+  "payload": { ... },
+  "created_by": "..."
+}
+```
+
+---
+
+## One-Time Scheduling
+
+To schedule a task to run exactly once at a specific time in the future, you can use the `once` schedule kind.
+
+Set `schedule_kind` to `once` to use this method.
+
+### `once` Expression Format
+
+The `schedule_expr` for a one-time task must be a timestamp in **ISO 8601 format**.
+
+### Example One-Time Task
+
+```json
+{
+  "title": "Deploy New Feature",
+  "description": "Trigger the deployment pipeline at a specific time.",
+  "schedule_kind": "once",
+  "schedule_expr": "2025-12-25T09:00:00+02:00",
   "timezone": "Europe/Chisinau",
   "payload": { ... },
   "created_by": "..."
 }
 ```
 
-This task will reliably run at 5:00 PM on the last weekday of every month, regardless of whether that day is the 28th, 29th, 30th, or 31st, and it will correctly adjust for DST.
+This task will execute a single time on Christmas Day 2025 at 9:00 AM in the Chișinău timezone.

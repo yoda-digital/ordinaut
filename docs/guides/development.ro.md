@@ -1,6 +1,6 @@
 # Ghid de Dezvoltare
 
-Acest ghid oferă instrucțiuni pentru configurarea unui mediu de dezvoltare local, rularea testelor și contribuirea la backend-ul API Ordinaut pentru programarea sarcinilor.
+Acest ghid oferă instrucțiuni pentru configurarea unui mediu de dezvoltare local, rularea testelor și contribuirea la proiectul Ordinaut.
 
 ## Configurare Mediu de Dezvoltare Local
 
@@ -27,79 +27,62 @@ Acest ghid oferă instrucțiuni pentru configurarea unui mediu de dezvoltare loc
 3.  **Instalați dependențele:**
     ```bash
     pip install -r requirements.txt
-    pip install -r observability/requirements.txt # Pentru componentele de monitorizare
+    pip install -r observability/requirements.txt
+    pip install black flake8 pytest
     ```
 
-4.  **Porniți serviciile de fundal:**
-    Pentru dezvoltare locală, aveți nevoie de baza de date PostgreSQL și serverul Redis în funcțiune. Le puteți porni ușor cu Docker Compose.
+4.  **Porniți serviciile de fundal (PostgreSQL, Redis):**
     ```bash
     cd ops/
     docker compose up -d postgres redis
     ```
 
-5.  **Rulați migrațiile bazei de date:**
-    Aplicați schema inițială a bazei de date.
-    ```bash
-    psql "$DATABASE_URL" -f ../migrations/version_0001.sql
-    ```
-
 ### Rularea Componentelor Individual
 
-Cu baza de date și Redis în funcțiune, puteți rula serverul API, planificatorul și workerii ca procese separate pe mașina locală.
-
-- **Rulați Serverul API:**
+- **Server API:**
   ```bash
   uvicorn api.main:app --host 0.0.0.0 --port 8080 --reload
   ```
 
-- **Rulați Serviciul de Planificare:**
+- **Scheduler:**
   ```bash
   python scheduler/tick.py
   ```
 
-- **Rulați un Worker:**
+- **Worker:**
   ```bash
   python workers/runner.py
   ```
 
 ## Cadru de Testare
 
-Ordinaut folosește `pytest` pentru testare. Testele sunt organizate în categoriile `unit`, `integration` și `load`.
+Ordinaut folosește `pytest` pentru testare.
+
+!!! warning "Starea Suitei de Teste"
+    Suita de teste este în prezent în curs de mentenanță semnificativă. Multe teste sunt cunoscute ca fiind nefuncționale. După cum este detaliat în `test_verification_report.md`, acoperirea reală a testelor este de aproximativ 11%.
+
+    Contribuitorii ar trebui să se concentreze pe scrierea de teste noi, funcționale, pentru caracteristicile lor.
 
 ### Rularea Testelor
 
-- **Rulați toate testele:**
-  ```bash
-  pytest
-  ```
+```bash
+# Rulează toate testele (așteptați-vă la eșecuri)
+pytest
 
-- **Rulați o categorie specifică:**
-  ```bash
-  pytest tests/unit/
-  ```
-
-- **Rulați cu raport de acoperire:**
-  ```bash
-  pytest --cov=ordinaut --cov-report=html
-  ```
+# Rulează un fișier de test specific, funcțional
+pytest tests/test_rruler.py
+```
 
 ## Calitatea și Standardele Codului
 
-Folosim `black` pentru formatarea codului și `flake8` pentru linting pentru a asigura un stil de cod consistent.
+Folosim `black` pentru formatarea codului și `flake8` pentru linting.
 
-- **Formatați codul:**
-  ```bash
-  black .
-  ```
-
-- **Verificați erorile de linting:**
-  ```bash
-  flake8 .
-  ```
+- **Formatați codul:** `black .`
+- **Verificați erorile:** `flake8 .`
 
 ## Contribuire
 
-1.  Creați un branch de caracteristică (feature branch) din `main`.
-2.  Scrieți codul, inclusiv teste pentru funcționalități noi.
-3.  Asigurați-vă că toate testele trec și că linter-ul este curat.
-4.  Trimiteți un Pull Request cu o descriere clară a modificărilor dumneavoastră.
+1.  Creați un feature branch din `main`.
+2.  Scrieți cod și includeți **teste noi, funcționale**.
+3.  Asigurați-vă că verificările de calitate a codului trec.
+4.  Trimiteți un Pull Request.

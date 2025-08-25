@@ -1,13 +1,21 @@
 # Authentication
 
+!!! danger "Critical Security Warning"
+    The authentication system is currently **NOT SECURE** for production use. A security audit identified two critical vulnerabilities:
+
+    1.  **Authentication Bypass:** The system currently authenticates agents based on their ID alone, without validating any secret or password. This means anyone who knows an agent's ID can impersonate them.
+    2.  **Default JWT Secret:** The system uses a default, hardcoded JWT secret key if a secure one is not provided via the `JWT_SECRET_KEY` environment variable. This allows attackers to forge valid authentication tokens.
+
+    **Do not deploy this system in a production environment until these issues are fixed.**
+
 All API endpoints (except for public health checks) require Agent-based authentication using a **Bearer Token**.
 
 ## Bearer Token Authentication
 
-You must include an `Authorization` header with your agent's token in every request. The token should be prefixed with `Bearer `.
+The intended authentication mechanism is via JWT (JSON Web Tokens). You must include an `Authorization` header with your agent's token in every request. The token should be prefixed with `Bearer `.
 
 ```bash
-curl -H "Authorization: Bearer 00000000-0000-0000-0000-000000000001" \
+curl -H "Authorization: Bearer <your-jwt-access-token>" \
      https://api.ordinaut.example.com/v1/tasks
 ```
 

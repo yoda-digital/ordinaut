@@ -33,7 +33,7 @@ A pipeline is a JSON array of **steps** defined in the `payload` of a Task. The 
 ### Key Step Properties
 
 - `id`: A unique identifier for the step within the pipeline.
-- `uses`: The address of the **Tool** to execute (e.g., `weather-api.get_forecast`).
+- `uses`: The address of the **Tool** to be executed (e.g., `weather-api.get_forecast`).
 - `with`: An object containing the arguments for the tool. This section supports template variables.
 - `save_as`: The key under which the step's output will be saved in the context. This allows subsequent steps to use the result (e.g., `steps.weather`).
 - `if`: A conditional [JMESPath](https://jmespath.org/) expression. If it evaluates to a "falsy" value (like `false`, `null`, `[]`, `{}`), the step is skipped.
@@ -48,16 +48,19 @@ You can dynamically insert data into the `with` block using template variables, 
 - **`${steps.step_id.output_field}`**: Accesses the output of a previous step that used `save_as`. You can traverse nested JSON objects (e.g., `${steps.weather.details.humidity}`).
 - **`${now}`**: A special variable that provides the current UTC timestamp in ISO 8601 format.
 
-## Tool Catalog
+## Tool Execution (Simulated)
 
-Tools are the building blocks of pipelines. They represent a specific capability, like sending an email or querying a database. Each tool is defined in a central catalog and has a strict contract:
+Tools are the building blocks of pipelines, representing a specific capability like sending an email. However, it is critical to understand that the core Ordinaut engine **simulates** tool execution.
 
-- **Address:** A unique, human-readable identifier (e.g., `google-calendar.list_events`).
-- **Input Schema:** A JSON Schema that defines the expected arguments. The pipeline engine validates the `with` block of a step against this schema before execution.
-- **Output Schema:** A JSON Schema that defines the expected result. The engine validates the tool's response against this schema after execution.
+!!! warning "Tools are Not Executed by the Core Engine"
+    When the pipeline executor encounters a step with a `uses` field, it performs the following actions:
+    1.  It renders the input templates in the `with` block.
+    2.  It logs that a tool call is being **simulated**.
+    3.  It generates a mock output object containing the tool address and the rendered input.
+    4.  If `save_as` is present, it saves this mock output to the context for subsequent steps.
 
-This schema-driven approach ensures that all interactions are predictable, validated, and type-safe, which is critical for building robust automations.
+    The engine **does not** have a tool catalog, nor does it validate input/output schemas or execute any external code for the tool. The actual implementation of tools must be built as **separate extension services** that are triggered by events from Ordinaut or that poll the Ordinaut API.
 
 ## Error Handling
 
-If a step fails (e.g., a tool call times out or returns an error), the engine will respect the `max_retries` policy defined on the task or the step itself. If all retries fail, the entire pipeline run is marked as `failed`, and the error details are recorded in the **Run** object.
+If a step fails (e.g., due to a template rendering error), the engine will respect the `max_retries` policy defined on the task or the step itself. If all retries fail, the entire pipeline run is marked as `failed`, and the error details are recorded in the **Run** object.

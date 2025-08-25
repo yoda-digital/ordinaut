@@ -6,6 +6,8 @@ The Tasks API is the primary interface for creating, managing, and monitoring au
 
 Creates a new scheduled task.
 
+**Request Body:**
+
 | Field                 | Type    | Required | Description                                                              |
 |:----------------------|:--------|:---------|:-------------------------------------------------------------------------|
 | `title`               | string  | Yes      | A human-readable title for the task.                                     |
@@ -17,6 +19,10 @@ Creates a new scheduled task.
 | `created_by`          | UUID    | Yes      | The ID of the agent creating the task.                                   |
 | `priority`            | integer | No       | A priority from 1-9 (1 is highest). Default is 5.                        |
 | `max_retries`         | integer | No       | The number of times to retry a failed run. Default is 3.                 |
+| `backoff_strategy`    | string  | No       | Retry backoff strategy (`exponential_jitter`, `linear`, `fixed`). Default is `exponential_jitter`. |
+| `dedupe_key`          | string  | No       | A key to prevent duplicate task runs.                                    |
+| `dedupe_window_seconds` | integer | No       | Time window in seconds for deduplication.                                |
+| `concurrency_key`     | string  | No       | A key to control concurrent execution of tasks.                          |
 
 **Example Request:**
 
@@ -35,6 +41,8 @@ Lists tasks with optional filtering.
 
 **Query Parameters:**
 - `status`: Filter by `active`, `paused`, or `canceled`.
+- `created_by`: Filter by the UUID of the creating agent.
+- `schedule_kind`: Filter by the schedule type (`cron`, `rrule`, etc.).
 - `limit`: Number of results to return (default: 50).
 - `offset`: Pagination offset.
 
@@ -46,9 +54,32 @@ Retrieves the full details of a specific task by its UUID.
 
 ---
 
+## `PUT /tasks/{id}`
+
+Updates an existing task. Only the fields provided in the request body will be updated.
+
+**Request Body:**
+
+The request body can contain any of the fields from the `POST /tasks` request, all of which are optional.
+
+---
+
 ## `POST /tasks/{id}/run_now`
 
 Triggers an immediate, one-time execution of a task, bypassing its regular schedule.
+
+---
+
+## `POST /tasks/{id}/snooze`
+
+Delays the next scheduled execution of a task.
+
+**Request Body:**
+
+| Field           | Type    | Required | Description                               | 
+|:----------------|:--------|:---------|:------------------------------------------| 
+| `delay_seconds` | integer | Yes      | The delay in seconds (max 1 week).        | 
+| `reason`        | string  | No       | An optional reason for snoozing the task. |
 
 ---
 

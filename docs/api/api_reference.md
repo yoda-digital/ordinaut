@@ -1,6 +1,6 @@
 # API Reference
 
-The enterprise task scheduling system REST API is the primary interface for AI assistants and external systems to interact with the task scheduling backend via Model Context Protocol (MCP). The API is built with FastAPI and provides automatic, interactive documentation.
+The Ordinaut REST API is the primary interface for all interactions with the task scheduling system. It is built with FastAPI, which provides automatic, interactive documentation.
 
 ## Interactive Documentation
 
@@ -20,7 +20,7 @@ These interfaces allow you to explore and test every endpoint directly from your
 
 ### Error Handling
 
-The API uses standard HTTP status codes to indicate the success or failure of a request. Error responses follow a consistent JSON format:
+The API uses standard HTTP status codes to indicate the success or failure of a request. Error responses follow a consistent JSON format, as defined by the `ErrorResponse` schema:
 
 ```json
 {
@@ -30,10 +30,25 @@ The API uses standard HTTP status codes to indicate the success or failure of a 
     "field": "schedule_expr",
     "value": "invalid cron",
     "expected": "Valid cron expression (e.g., '0 9 * * 1-5')"
-  }
+  },
+  "request_id": "req-123456789",
+  "timestamp": "2025-01-10T10:00:00Z"
 }
 ```
 
 ### Rate Limiting
 
-To ensure system stability, the API enforces rate limits on a per-agent basis. If you exceed the rate limit, you will receive a `429 Too Many Requests` response. Check the `X-RateLimit-Remaining` and `X-RateLimit-Reset` headers to manage your request frequency.
+To ensure system stability, the API enforces rate limits. By default, this is based on the client's IP address. If you exceed the rate limit, you will receive a `429 Too Many Requests` response. Check the `Retry-After` header to know when you can send another request.
+
+The response body will also contain details:
+
+```json
+{
+  "error": "RateLimitExceeded",
+  "message": "Too many requests",
+  "details": {
+    "limit": "60/minute"
+  },
+  "retry_after": 45
+}
+```

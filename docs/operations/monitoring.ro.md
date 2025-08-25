@@ -1,25 +1,21 @@
 # Monitorizare
 
-Backend-ul API Ordinaut este conceput pentru medii de producție și expune metrici cheie pentru monitorizarea sistemului de programare a sarcinilor.
+Ordinaut este conceput pentru medii de producție și expune metrici cheie pentru monitorizare și alertare. Un stack complet de observabilitate poate fi lansat folosind fișierul `docker-compose.observability.yml`.
 
 ## Metrici Prometheus
 
 Sistemul expune un punct final compatibil cu Prometheus la `/metrics`. Metricile cheie includ:
 
-- `orchestrator_tasks_total`: Contor pentru sarcinile create.
-- `orchestrator_runs_total`: Contor pentru rulările sarcinilor, etichetate după stare (`succes`, `eșec`).
-- `orchestrator_step_duration_seconds`: Histograma timpilor de execuție a pașilor din pipeline.
-- `orchestrator_due_work_queue_depth`: Indicator (gauge) care arată numărul de sarcini în așteptare.
-- `orchestrator_scheduler_lag_seconds`: Indicator care măsoară întârzierea dintre ora programată și execuția efectivă.
+- `orchestrator_tasks_created_total`: Contor pentru sarcinile create.
+- `orchestrator_runs_total`: Contor pentru rulările sarcinilor, etichetate după stare.
+- `orchestrator_task_duration_seconds`: Histograma timpilor de execuție a sarcinilor.
+- `orchestrator_due_work_queue_depth`: Indicator care arată numărul de sarcini în așteptare.
+- `orchestrator_http_request_duration_seconds`: Histograma latenței cererilor API.
 
 ## Panouri de Bord Grafana
 
-Se recomandă configurarea panourilor de bord Grafana pentru a vizualiza aceste metrici. Panourile cheie includ:
-
-- **Sănătatea Sistemului:** O imagine de ansamblu a timpilor de răspuns API, ratelor de eroare și sănătății componentelor.
-- **Analiza Sarcinilor și Rulărilor:** Urmărirea sarcinilor create vs. finalizate, ratele de succes/eșec și sarcinile care eșuează cel mai frecvent.
-- **Performanța Worker-ilor:** Monitorizarea adâncimii cozii, latenței de procesare și saturației worker-ilor.
+Se recomandă configurarea panourilor de bord Grafana pentru a vizualiza aceste metrici. Stack-ul de observabilitate include o instanță Grafana pre-configurată.
 
 ## Jurnalizare (Logging)
 
-Toate serviciile produc jurnale structurate (JSON) cu ID-uri de corelare (`task_id`, `run_id`), permițând filtrarea și analiza ușoară într-o platformă centralizată de jurnalizare precum Loki sau stiva ELK.
+Toate serviciile produc jurnale structurate (JSON) cu ID-uri de corelare (`task_id`, `run_id`). Stack-ul de observabilitate include **Loki** pentru agregarea centralizată a jurnalelor.
