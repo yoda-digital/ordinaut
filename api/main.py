@@ -290,6 +290,47 @@ app.include_router(agents.router)
 # Metrics endpoint is served by the observability extension
 
 
+# Extension system visibility endpoints (mirror ordinaut.api)
+@app.get("/extensions")
+def list_extensions():
+    out = []
+    for pid, spec in getattr(_ext_loader, 'specs', {}).items():
+        entry = {
+            "id": pid,
+            "root": str(spec.root),
+            "module": spec.module,
+            "enabled": spec.enabled,
+            "eager": spec.eager,
+            "source": getattr(spec, "source", "unknown"),
+            "grants": [c.name for c in (spec.grants or set())],
+            "status": getattr(_ext_loader, 'status', {}).get(pid, {}),
+            "metrics": getattr(_ext_loader, 'metrics', {}).get(pid, {}),
+        }
+        out.append(entry)
+    return out
+
+
+@app.get("/extensions/{plugin_id}/events/health")
+async def extension_events_health(plugin_id: str, namespace: str | None = None):
+    em = getattr(_ext_loader, "_events_manager", None)
+    if not em:
+        raise HTTPException(status_code=404, detail="events manager not enabled")
+    try:
+        res = await em.health_for_plugin(plugin_id, namespace=namespace)
+    except Exception as ex:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=str(ex))
+    return res
+
+
+@app.get("/tools")
+def list_tools():
+    try:
+        reg = _ext_tool_registry
+        return {k: {"description": v.get("description", "")} for k, v in reg.list().items()}
+    except Exception:
+        return {}
+
+
 # Health check endpoints
 @app.get("/health", tags=["health"])
 async def health_check():

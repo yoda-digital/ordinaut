@@ -35,6 +35,8 @@ class ExtensionSpec:
     enabled: bool = True
     grants: set[Capability] | None = None
     eager: bool = False
+    # Where this spec was discovered from: builtin (ordinaut/extensions), env_dir, env_file, entry_point
+    source: str = "builtin"
 
 
 class ExtensionLoader:
@@ -50,7 +52,7 @@ class ExtensionLoader:
 
     def discover(self) -> list[ExtensionSpec]:
         specs: list[ExtensionSpec] = []
-        base = Path("extensions")
+        base = Path("ordinaut/extensions")
         if base.exists():
             for d in sorted(p for p in base.iterdir() if p.is_dir()):
                 manifest = d / "extension.json"
@@ -64,6 +66,7 @@ class ExtensionLoader:
                         id=m["id"], root=d, module=str(module),
                         enabled=bool(m.get("enabled", True)), grants=grants,
                         eager=bool(m.get("eager", False)),
+                        source="builtin",
                     ))
         env_paths = os.environ.get("ORDINAUT_EXT_PATHS", "")
         for p in filter(None, env_paths.split(":")):
@@ -80,10 +83,11 @@ class ExtensionLoader:
                         id=m["id"], root=path, module=str(module),
                         enabled=bool(m.get("enabled", True)), grants=grants,
                         eager=bool(m.get("eager", False)),
+                        source="env_dir",
                     ))
             elif path.is_file():
                 specs.append(ExtensionSpec(
-                    id=path.stem, root=path.parent, module=str(path), enabled=True, grants=set()
+                    id=path.stem, root=path.parent, module=str(path), enabled=True, grants=set(), source="env_file"
                 ))
         # 3) Python entry points: ordinaut.plugins
         try:
@@ -116,6 +120,7 @@ class ExtensionLoader:
                     enabled=True,
                     grants=grants,
                     eager=bool(eager_cfg.get(pid, False)),
+                    source="entry_point",
                 ))
         except Exception:
             pass

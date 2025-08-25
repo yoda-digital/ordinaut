@@ -65,6 +65,7 @@ def create_app() -> FastAPI:
                 "module": spec.module,
                 "enabled": spec.enabled,
                 "eager": spec.eager,
+                "source": getattr(spec, "source", "unknown"),
                 "grants": [c.name for c in (spec.grants or set())],
                 "status": loader.status.get(pid, {}),
                 "metrics": loader.metrics.get(pid, {}),

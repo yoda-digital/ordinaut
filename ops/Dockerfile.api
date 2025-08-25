@@ -83,7 +83,6 @@ COPY engine/ /app/engine/
 COPY ordinaut/ /app/ordinaut/
 COPY observability/ /app/observability/
 COPY migrations/ /app/migrations/
-COPY extensions/ /app/extensions/
 
 # Change ownership to app user
 RUN chown -R appuser:appuser /app
