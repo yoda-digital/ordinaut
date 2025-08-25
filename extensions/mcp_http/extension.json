@@ -1,9 +1,0 @@
-{
-  "id": "mcp_http",
-  "name": "MCP over HTTP",
-  "version": "0.1.0",
-  "description": "Experimental MCP-compatible HTTP surface served as an extension",
-  "module": "extension.py",
-  "enabled": true,
-  "grants": ["ROUTES"]
-}
